@@ -1,0 +1,90 @@
+[
+  {
+    "art": "die",
+    "word": "Voraussetzung",
+    "plural": "die Voraussetzungen",
+    "phonetic": "/foˈʁaʊ̯sˌzɛtsʊŋ/",
+    "vi": "Điều kiện tiên quyết, yêu cầu bắt buộc",
+    "level": "B1/B2",
+    "topic": "Sự nghiệp & Công việc",
+    "sentence": "Gute Deutschkenntnisse sind eine feste Voraussetzung für eine Arbeitsstelle in Deutschland.",
+    "sentenceVi": "Kỹ năng tiếng Đức tốt là điều kiện tiên quyết cho một vị trí công việc tại Đức."
+  },
+  {
+    "art": "die",
+    "word": "Auseinandersetzung",
+    "plural": "die Auseinandersetzungen",
+    "phonetic": "/aʊ̯sʔaɪ̯ˈnandɐˌzɛtsʊŋ/",
+    "vi": "Sự tìm hiểu sâu, cuộc tranh luận, đối mặt giải quyết",
+    "level": "B2/C1",
+    "topic": "Tranh luận & Học thuật",
+    "sentence": "Eine intensive Auseinandersetzung mit der deutschen Sprache bringt schnellen Erfolg.",
+    "sentenceVi": "Việc tiếp cận và tìm hiểu sâu sắc tiếng Đức mang lại thành công nhanh chóng."
+  },
+  {
+    "art": "die",
+    "word": "Nachhaltigkeit",
+    "plural": "kein Plural",
+    "phonetic": "/ˈnaːxˌhaltɪçkaɪ̯t/",
+    "vi": "Tính bền vững, sự phát triển lâu dài",
+    "level": "B2",
+    "topic": "Môi trường & Kinh tế",
+    "sentence": "Nachhaltigkeit spielt in modernen deutschen Unternehmen eine zentrale Rolle.",
+    "sentenceVi": "Tính bền vững đóng vai trò trung tâm trong các doanh nghiệp Đức hiện đại."
+  },
+  {
+    "art": "",
+    "word": "erledigen",
+    "plural": "hat erledigt",
+    "phonetic": "/ɛɐ̯ˈleːdɪɡn̩/",
+    "vi": "Hoàn thành, giải quyết xong xuôi (công việc, nhiệm vụ)",
+    "level": "B1",
+    "topic": "Công việc hàng ngày",
+    "sentence": "Ich muss heute noch diese wichtige Aufgabe erledigen.",
+    "sentenceVi": "Hôm nay tôi vẫn còn phải hoàn thành nhiệm vụ quan trọng này."
+  },
+  {
+    "art": "",
+    "word": "sich kümmern um",
+    "plural": "+ Akkusativ",
+    "phonetic": "/zɪç ˈkʏmɐn ʊm/",
+    "vi": "Chăm lo, phụ trách, xử lý việc gì",
+    "level": "B1",
+    "topic": "Giao tiếp công sở",
+    "sentence": "Keine Sorge, ich kümmere mich sofort darum.",
+    "sentenceVi": "Đừng lo, tôi sẽ lo liệu việc đó ngay lập tức."
+  },
+  {
+    "art": "die",
+    "word": "Herausforderung",
+    "plural": "die Herausforderungen",
+    "phonetic": "/hɛˈʁaʊ̯sˌfɔʁdəʁʊŋ/",
+    "vi": "Thách thức, thử thách",
+    "level": "B2",
+    "topic": "Sự nghiệp & Đời sống",
+    "sentence": "Die Digitalisierung bringt neue Herausforderungen mit sich.",
+    "sentenceVi": "Số hóa mang theo những thách thức mới."
+  },
+  {
+    "art": "der",
+    "word": "Zusammenhang",
+    "plural": "die Zusammenhänge",
+    "phonetic": "/tsuˈzamənhaŋ/",
+    "vi": "Mối liên hệ, ngữ cảnh, bối cảnh",
+    "level": "B2",
+    "topic": "Học thuật & Giao tiếp",
+    "sentence": "Man sollte neue Wörter immer im Zusammenhang lernen.",
+    "sentenceVi": "Người ta nên luôn học từ mới trong ngữ cảnh."
+  },
+  {
+    "art": "die",
+    "word": "Verantwortung",
+    "plural": "die Verantwortungen",
+    "phonetic": "/fɛɐ̯ˈʔantvɔʁtʊŋ/",
+    "vi": "Trách nhiệm",
+    "level": "B1/B2",
+    "topic": "Công việc",
+    "sentence": "Er übernimmt die volle Verantwortung für das Projekt.",
+    "sentenceVi": "Anh ấy nhận toàn bộ trách nhiệm cho dự án."
+  }
+]

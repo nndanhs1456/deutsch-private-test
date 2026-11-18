@@ -1,0 +1,3232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DeutschMaster • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức</title>
+  
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#060913">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-dark: #060913;
+      --glass-surface: rgba(255, 255, 255, 0.06);
+      --glass-surface-hover: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.13);
+      --glass-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+      
+      --accent-red: #f43f5e;
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-purple: #a855f7;
+      --accent-gold: #f59e0b;
+      --accent-cyan: #06b6d4;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "SF Pro Display", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    html,
+    body,
+    #root {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      font-family: var(--font-stack);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      position: relative;
+    }
+
+    .ambient-glow-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient Liquid Glowing Orbs */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(110px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      animation: floatOrbit 24s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #6366f1, #38bdf8); top: -12%; left: 8%; }
+    .orb-2 { width: 540px; height: 540px; background: radial-gradient(circle, #a855f7, #ec4899); bottom: -15%; right: 5%; animation-duration: 28s; animation-delay: -7s; }
+    .orb-3 { width: 380px; height: 380px; background: radial-gradient(circle, #10b981, #06b6d4); top: 50%; left: 45%; transform: translate(-50%, -50%); opacity: 0.25; animation-duration: 20s; }
+
+    @keyframes floatOrbit {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.12); }
+      100% { transform: translate(-40px, -30px) scale(0.95); }
+    }
+
+    /* Main Container (iOS Liquid Glass Canvas - Fullscreen 100%) */
+    .app-viewport {
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      backdrop-filter: blur(45px) saturate(190%);
+      -webkit-backdrop-filter: blur(45px) saturate(190%);
+      background: rgba(14, 20, 38, 0.55);
+      border: none;
+      box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
+      border-radius: 0;
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      overflow-x: hidden;
+      transition: grid-template-columns 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .app-viewport.sidebar-collapsed {
+      grid-template-columns: 86px 1fr;
+    }
+    .app-viewport.sidebar-collapsed .brand-sub,
+    .app-viewport.sidebar-collapsed .brand-title,
+    .app-viewport.sidebar-collapsed .nav-item span,
+    .app-viewport.sidebar-collapsed .formula-pill {
+      display: none !important;
+    }
+    .app-viewport.sidebar-collapsed .sidebar {
+      padding: 24px 14px;
+      align-items: center;
+    }
+    .app-viewport.sidebar-collapsed .nav-item {
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .liquid-glass {
+      background: var(--glass-surface);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: var(--glass-shadow);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(8, 12, 24, 0.45);
+    }
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 4px 6px;
+      margin-bottom: 22px;
+    }
+    .flag-bubble {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #1f2937 33%, #ef4444 33% 66%, #fbbf24 66%);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-item svg {
+      flex-shrink: 0;
+    }
+    .nav-item:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateX(4px);
+    }
+    .nav-item.active {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.4);
+    }
+
+    .formula-pill {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      margin-top: auto;
+    }
+
+    /* Content Stage */
+    .main-stage {
+      padding: 28px 34px 6rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      width: 100%;
+      min-width: 0;
+      min-height: 100vh;
+      max-height: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.2) transparent;
+      transition: padding-bottom 0.25s ease;
+    }
+    body.dm-player-minimized .main-stage {
+      padding-bottom: 2rem;
+    }
+    .main-stage::-webkit-scrollbar { width: 6px; }
+    .main-stage::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .dm-fc-scene {
+      perspective: 1200px;
+      width: 100%;
+    }
+    .dm-fc-card {
+      position: relative;
+      width: 100%;
+      min-height: 310px;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: pointer;
+    }
+    .dm-fc-card.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .dm-fc-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px 28px;
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .dm-fc-front {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(30, 27, 75, 0.72));
+    }
+    .dm-fc-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.45), rgba(15, 23, 42, 0.9));
+      border-color: rgba(16, 185, 129, 0.38);
+    }
+    @media (min-width: 1024px) {
+      #vocabCardsGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+    .desktop-collapse-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-right: 14px;
+    }
+    .desktop-collapse-btn:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+    .greeting h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #ffffff 40%, #a7f3d0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .greeting p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .deck-btn {
+      padding: 12px 24px;
+      border-radius: 18px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+      outline: none;
+    }
+    .deck-btn:active { transform: scale(0.96); }
+    .btn-glass-subtle { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+    .btn-glass-subtle:hover { background: rgba(255,255,255,0.15); }
+    .btn-primary-ios {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255,255,255,0.6);
+    }
+    .btn-primary-ios:hover { box-shadow: 0 14px 30px -4px rgba(16, 185, 129, 0.6); transform: translateY(-2px); }
+
+    .tab-view { display: none; animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .tab-view.active { display: block; }
+    @keyframes tabFadeIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* Live German News Reader View (Leseverstehen) */
+    .live-news-grid {
+      display: flex;
+      gap: 20px;
+      align-items: stretch;
+      width: 100%;
+    }
+    .live-news-sidebar {
+      width: 360px;
+      flex-shrink: 0;
+      max-height: calc(100vh - 220px);
+      display: flex;
+      flex-direction: column;
+    }
+    .live-news-reader {
+      flex: 1 1 0%;
+      min-width: 0;
+      min-height: 540px;
+      padding: 26px 28px 6rem !important;
+      overflow-y: auto;
+      transition: padding-bottom 0.25s ease;
+    }
+    #liveNewsReaderBody {
+      padding-bottom: 6rem;
+      transition: padding-bottom 0.25s ease;
+    }
+    body.dm-player-minimized .live-news-reader,
+    body.dm-player-minimized #liveNewsReaderBody {
+      padding-bottom: 2rem !important;
+    }
+    .de-reader-word {
+      cursor: pointer;
+      border-radius: 5px;
+      padding: 1px 2px;
+      transition: background 0.15s ease, color 0.15s ease;
+      border-bottom: 1px dashed rgba(56, 189, 248, 0.25);
+    }
+    .de-reader-word:hover {
+      background: rgba(56, 189, 248, 0.22);
+      color: #7dd3fc;
+      border-bottom-color: #38bdf8;
+    }
+    @media (max-width: 1024px) {
+      .live-news-grid {
+        flex-direction: column;
+      }
+      .live-news-sidebar {
+        width: 100%;
+        max-height: 360px;
+      }
+      .live-news-reader {
+        width: 100%;
+        flex: none;
+      }
+    }
+
+    /* Mobile Drawer & Header */
+    .mobile-header-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(10, 15, 30, 0.7);
+      backdrop-filter: blur(25px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      width: 100%;
+    }
+    .hamburger-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .dm-yt-root {
+      z-index: 30 !important;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-overlay.active { display: block; opacity: 1; pointer-events: auto; }
+
+    @media (max-width: 950px) {
+      html,
+      body,
+      #root {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      body {
+        display: block;
+        padding: 0;
+      }
+      .mobile-header-bar {
+        display: flex !important;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100vw;
+        z-index: 20;
+      }
+      .app-viewport,
+      .app-viewport.sidebar-collapsed {
+        display: block !important;
+        position: static !important;
+        z-index: auto !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        border-radius: 0;
+        min-height: calc(100vh - 66px);
+        border: none;
+      }
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: auto !important;
+        width: min(290px, 84vw);
+        background: #0a0f1e;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        z-index: 50 !important;
+        transform: translateX(-100%) !important;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+        padding: 22px 16px;
+        box-shadow: 10px 0 40px rgba(0,0,0,0.85);
+        overflow-y: auto;
+      }
+      .sidebar.open {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+      }
+      .app-viewport.sidebar-collapsed .sidebar {
+        padding: 22px 16px;
+        align-items: stretch;
+      }
+      .app-viewport.sidebar-collapsed .brand-sub,
+      .app-viewport.sidebar-collapsed .brand-title,
+      .app-viewport.sidebar-collapsed .nav-item span,
+      .app-viewport.sidebar-collapsed .formula-pill {
+        display: block !important;
+      }
+      .app-viewport.sidebar-collapsed .nav-item {
+        justify-content: flex-start;
+        padding: 12px 16px;
+      }
+      .sidebar .close-drawer-btn { display: flex !important; }
+      .main-stage {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+        padding: 16px 14px 6rem;
+        max-height: none;
+        overflow-x: hidden !important;
+      }
+      body.dm-player-minimized .main-stage {
+        padding-bottom: 2rem;
+      }
+      .tab-view,
+      .liquid-glass {
+        max-width: 100%;
+        min-width: 0;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 16px;
+        width: 100%;
+      }
+      .desktop-collapse-btn { display: none !important; }
+      .greeting h1 {
+        font-size: 1.32rem;
+        line-height: 1.3;
+        word-break: break-word;
+      }
+      .greeting p {
+        font-size: 0.84rem;
+        line-height: 1.45;
+        word-break: break-word;
+      }
+      .live-news-grid {
+        flex-direction: column;
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      html,
+      body,
+      #root {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+      }
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        transform: translateX(-100%) !important;
+      }
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+      #vocabCardsGrid,
+      #favoritesListContainer,
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="minmax(280px, 1fr)"],
+      [style*="minmax(300px, 1fr)"],
+      [style*="minmax(320px, 1fr)"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      table {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .mobile-header-bar {
+        padding: 10px 14px;
+      }
+      .main-stage {
+        padding: 14px 12px 6rem;
+      }
+      body.dm-player-minimized .main-stage {
+        padding-bottom: 2rem;
+      }
+      .greeting h1 {
+        font-size: 1.18rem;
+      }
+      .greeting p {
+        font-size: 0.8rem;
+      }
+      .liquid-glass {
+        padding: 15px 14px !important;
+        border-radius: 18px !important;
+      }
+      .liquid-glass h3 {
+        font-size: 1.04rem !important;
+        line-height: 1.35;
+      }
+      .deck-btn {
+        padding: 9px 13px;
+        font-size: 0.82rem;
+        gap: 6px;
+        border-radius: 13px;
+      }
+      #liveNewsReaderBody h2 {
+        font-size: 1.25rem !important;
+        line-height: 1.35 !important;
+      }
+      #liveNewsReaderBody p {
+        font-size: 1rem !important;
+        line-height: 1.7 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Backdrop mobile -->
+  <div class="sidebar-overlay" id="mobileOverlay" onclick="closeMobileDrawer()"></div>
+
+  <!-- Ambient Glowing Orbs (Clipped within viewport) -->
+  <div class="ambient-glow-layer" aria-hidden="true">
+    <div class="ambient-glow orb-1"></div>
+    <div class="ambient-glow orb-2"></div>
+    <div class="ambient-glow orb-3"></div>
+  </div>
+
+  <!-- Thanh Header Mobile Có Nút 3 Gạch -->
+  <div class="mobile-header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="hamburger-btn" onclick="openMobileDrawer()" title="Mở danh mục menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em;">DeutschMaster</div>
+    </div>
+    <button class="hamburger-btn" style="width: 38px; height: 38px; font-size: 1rem;" onclick="switchTab('live-trans')" title="Mở nhanh Dịch Trên Lớp">
+      <i class="fa-solid fa-microphone" style="color: #f43f5e;"></i>
+    </button>
+  </div>
+
+  <!-- iOS Fluid Glass Container -->
+  <main class="app-viewport">
+    
+    <!-- Sidebar / Drawer -->
+    <aside class="sidebar" id="appSidebar">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="brand-pill" style="margin-bottom: 0;">
+          <div class="flag-bubble"></div>
+          <div>
+            <div class="brand-title">DeutschMaster</div>
+            <div class="brand-sub">SLA Natural Learning</div>
+          </div>
+        </div>
+        <button class="close-drawer-btn" onclick="closeMobileDrawer()" style="display: none; width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.1); border: none; color: #fff; place-items: center; cursor: pointer;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navigation nhóm theo 4 Kỹ năng Khoa học SLA -->
+      <nav class="nav-group">
+        <!-- 1. Ghi âm & Dịch trên lớp -->
+        <div class="nav-item active" onclick="switchTab('live-trans')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+          <span>Unterricht & Mitschreiben</span>
+        </div>
+
+        <!-- 2. Listening: Phương pháp 3 lần nghe & Đài Đức -->
+        <div class="nav-item" onclick="switchTab('listening')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+          </svg>
+          <span>Hörverstehen (3 Lần Nghe)</span>
+        </div>
+
+        <!-- 3. Shadowing: Nhại giọng bản ngữ -->
+        <div class="nav-item" onclick="switchTab('shadowing')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+          <span>Shadowing (Aussprache)</span>
+        </div>
+
+        <!-- 4. Reading: Phương pháp 2 lần đọc -->
+        <div class="nav-item" onclick="switchTab('reading')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          <span>Leseverstehen (Đọc 2 Lần)</span>
+        </div>
+
+        <!-- 5. Vocabulary: Cụm từ Collocations & Active Recall -->
+        <div class="nav-item" onclick="switchTab('vocab')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <span>Kollokationen & Wortschatz</span>
+        </div>
+
+        <!-- 6. Lộ trình 60 phút mỗi ngày -->
+        <div class="nav-item" onclick="switchTab('routine')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Tagesplan (60 Min/Tag)</span>
+        </div>
+
+        <!-- 7. Tra Từ Điển & AI Thông Minh Mở Rộng -->
+        <div class="nav-item" onclick="switchTab('dictionary')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+          <span>Wörterbuch & KI (Từ Điển AI)</span>
+        </div>
+
+        <!-- 8. Sổ tay Từ vựng & Ghi Nhớ Cá Nhân -->
+        <div class="nav-item" onclick="switchTab('favorites')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 2v8l3-3 3 3V2"></path>
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path>
+          </svg>
+          <span>Sổ tay (<span id="favBadgeCount">0</span>)</span>
+        </div>
+      </nav>
+
+      <div class="formula-pill">
+        <div style="font-size: 0.75rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 3px;">
+          <i class="fa-solid fa-atom"></i> Công Thức SLA
+        </div>
+        <p style="font-size: 0.76rem; color: #cbd5e1; line-height: 1.4;">
+          Input + Active Recall + Spaced Repetition + Active Output + Feedback
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Screen Stage -->
+    <section class="main-stage">
+      
+      <!-- Top header bar -->
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; min-width: 0; flex: 1;">
+          <button class="desktop-collapse-btn" onclick="toggleDesktopSidebar()" title="Đóng / Mở menu bên trái">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="greeting" style="min-width: 0;">
+            <h1 id="view-title">Ghi Âm & Dịch Trên Lớp Học</h1>
+            <p id="view-desc">Bật micro tự động lắng nghe giáo viên giảng tiếng Đức và dịch nghĩa tiếng Việt liên tục.</p>
+          </div>
+        </div>
+
+        <!-- Thanh chuyển đổi chế độ xem cho Kollokationen & Wortschatz -->
+        <div id="vocabViewModeSwitcher" style="display: none; align-items: center; gap: 6px; padding: 5px; border-radius: 16px; background: rgba(0, 0, 0, 0.42); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(12px); flex-shrink: 0; max-width: 100%; flex-wrap: wrap;">
+          <button id="btnVocabModeList" class="deck-btn btn-primary-ios" onclick="window.switchVocabViewMode('list')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #38bdf8);">
+            <i class="fa-solid fa-table-cells-large"></i> Danh sách thẻ
+          </button>
+          <button id="btnVocabModeFlashcard" class="deck-btn btn-glass-subtle" onclick="window.switchVocabViewMode('flashcard')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px;">
+            <i class="fa-solid fa-clone"></i> Luyện lật thẻ
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      <div id="tab-news-manga" class="tab-view">
+        
+        <!-- Bộ chọn nguồn: Tin tức Báo Đức & Manga Song Ngữ Đức -->
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: #ec4899;">
+                <i class="fa-solid fa-book-open-reader"></i> Đọc Báo & Manga Tiếng Đức Trực Tiếp
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                Đọc tin tức tiếng Đức dễ hiểu (B1/B2) và Manga dịch tiếng Đức chuẩn, bấm vào câu/từ để tra nghĩa hoặc nghe phát âm ngay trong ứng dụng!
+              </p>
+            </div>
+
+            <!-- Nút chuyển đổi chế độ Báo / Manga -->
+            <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);">
+              <button class="deck-btn btn-primary-ios" id="btnModeNews" onclick="switchMediaMode('news')" style="padding: 8px 16px; font-size: 0.85rem; background: linear-gradient(135deg, #ec4899, #db2777);">
+                <i class="fa-solid fa-newspaper"></i> Báo Đức (Einfache Sprache)
+              </button>
+              <button class="deck-btn btn-glass-subtle" id="btnModeManga" onclick="switchMediaMode('manga')" style="padding: 8px 16px; font-size: 0.85rem;">
+                <i class="fa-solid fa-book-journal-whills"></i> Manga Tiếng Đức
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. KHU VỰC BÁO CHÍ ĐỨC -->
+          <div id="sectionNewsView">
+            <!-- Danh sách bài báo chọn lọc -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 18px;">
+              <div class="news-selector-card active" onclick="loadNewsArticle(0, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(236, 72, 153, 0.5); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #ec4899; text-transform: uppercase;">Nachrichtenleicht • Xã hội Đức</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Neue Regeln für Arbeitszeiten in Deutschland</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Quy định mới về thời gian làm việc tại Đức</span>
+              </div>
+
+              <div class="news-selector-card" onclick="loadNewsArticle(1, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Wirtschaft • B1/B2</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Fachkräftemangel in der Gastronomie und Hotellerie</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Tình trạng thiếu nhân lực ngành nhà hàng - khách sạn</span>
+              </div>
+
+              <div class="news-selector-card" onclick="loadNewsArticle(2, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #10b981; text-transform: uppercase;">Technologie • Đời sống</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Künstliche Intelligenz verändert den Alltag der Menschen</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Trí tuệ nhân tạo đang thay đổi cuộc sống hàng ngày ra sao</span>
+              </div>
+            </div>
+
+            <!-- Khung Đọc Báo Tương Tác Trực Tiếp Trong App -->
+            <div class="liquid-glass" style="padding: 24px; background: rgba(10, 15, 30, 0.55); border: 1px solid rgba(255,255,255,0.12);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <div>
+                  <h4 id="newsArticleTitleDe" style="font-size: 1.35rem; font-weight: 800; color: #fff;">Neue Regeln für Arbeitszeiten in Deutschland</h4>
+                  <p id="newsArticleTitleVi" style="font-size: 0.92rem; color: #ec4899; font-weight: 600; margin-top: 4px;">Quy định mới về thời gian làm việc tại Đức</p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="deck-btn btn-glass-subtle" onclick="readAloudCurrentNews()" style="padding: 8px 14px; font-size: 0.82rem;">
+                    <i class="fa-solid fa-volume-high"></i> Đọc to bài báo
+                  </button>
+                  <button class="deck-btn btn-glass-subtle" onclick="toggleNewsSentenceTranslation()" style="padding: 8px 14px; font-size: 0.82rem;">
+                    <i class="fa-solid fa-language"></i> Bật/Tắt dịch từng câu
+                  </button>
+                </div>
+              </div>
+
+              <!-- Nội dung bài báo theo đoạn (Bấm vào câu nào dịch câu đó) -->
+              <div id="newsArticleContent" style="font-size: 1.05rem; line-height: 2; color: #e2e8f0; max-height: 480px; overflow-y: auto; padding-right: 10px;">
+                <!-- Nội dung được nạp tự động qua JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. KHU VỰC MANGA TIẾNG ĐỨC -->
+          <div id="sectionMangaView" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 18px;">
+              <div class="manga-selector-card active" onclick="loadMangaStory(0, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(236, 72, 153, 0.5); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #ec4899; text-transform: uppercase;">Anime Slice of Life • Tiếng Đức</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Ein ganz normaler Schultag (Một ngày đi học)</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Mẫu câu giao tiếp hàng ngày tự nhiên</span>
+              </div>
+
+              <div class="manga-selector-card" onclick="loadMangaStory(1, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">Shonen Adventure • Tiếng Đức</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Die Prüfung des Abenteurers (Kỳ thi phiêu lưu)</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Từ vựng hành động, quyết tâm, thử thách</span>
+              </div>
+
+              <div class="manga-selector-card" onclick="loadMangaStory(2, this)" style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+                <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Mystery Cafe • Tiếng Đức</span>
+                <strong style="color: #fff; font-size: 0.95rem; display: block; margin: 4px 0;">Das Geheimnis des alten Cafés (Bí ẩn quán cà phê)</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Đối thoại đời sống, gọi món, thắc mắc</span>
+              </div>
+            </div>
+
+            <!-- Khung Hiển Thị Khung Tranh & Thoại Manga Song Ngữ -->
+            <div class="liquid-glass" style="padding: 24px; background: rgba(10, 15, 30, 0.55); border: 1px solid rgba(255,255,255,0.12);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <div>
+                  <h4 id="mangaStoryTitle" style="font-size: 1.25rem; font-weight: 800; color: #fff;">Ein ganz normaler Schultag</h4>
+                  <span style="font-size: 0.8rem; color: #a7f3d0;">Chạm vào từng khung thoại để nghe giọng lồng tiếng Đức chuẩn!</span>
+                </div>
+              </div>
+
+              <!-- Danh sách các khung truyện Manga (Comic Panels) -->
+              <div id="mangaPanelsContainer" style="display: flex; flex-direction: column; gap: 16px; max-height: 520px; overflow-y: auto; padding-right: 10px;">
+                <!-- Nạp tự động qua JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB 1: DỊCH TRÊN LỚP HỌC (KÈM BẢN DỊCH LIỀN MẠCH & TÓM TẮT THI) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-live-trans" class="tab-view active">
+        
+        <div class="liquid-glass" style="padding: 26px; margin-bottom: 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(244, 63, 94, 0.2); color: #f43f5e; display: grid; place-items: center; font-size: 1.3rem;">
+                <i class="fa-solid fa-chalkboard-user"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 1.2rem; font-weight: 800;">Chế Độ Dịch Trên Lớp Trực Tiếp</h3>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">Mở mic để máy tự động nghe giáo viên giảng tiếng Đức và dịch ngay sang tiếng Việt.</p>
+              </div>
+            </div>
+
+            <div id="micStatusPill" style="display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8;">
+              <span id="micLed" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b;"></span>
+              <span id="micStatusText">Chưa kích hoạt</span>
+            </div>
+          </div>
+
+          <!-- Nút điều khiển chính -->
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">
+            <button class="deck-btn btn-primary-ios" id="btnToggleRec" onclick="toggleClassroomListen()" style="padding: 12px 26px; background: linear-gradient(135deg, #e11d48, #f43f5e);">
+              <i class="fa-solid fa-microphone" id="recMicIcon"></i> <span id="recBtnText">Bắt đầu lắng nghe bài giảng</span>
+            </button>
+
+            <button class="deck-btn btn-glass-subtle" onclick="simulateTeacherLecture()" title="Mô phỏng giáo viên giảng tiếng Đức">
+              <i class="fa-solid fa-vial" style="color: #38bdf8;"></i> Test lời giảng mẫu
+            </button>
+
+            <button class="deck-btn btn-glass-subtle" onclick="clearLiveTransHistory()">
+              <i class="fa-solid fa-trash-can"></i> Xóa bảng dịch
+            </button>
+
+            <button class="deck-btn btn-glass-subtle" onclick="exportLectureNotes()">
+              <i class="fa-solid fa-file-arrow-down"></i> Lưu ghi chép (.txt)
+            </button>
+
+            <button class="deck-btn btn-primary-ios" onclick="generateLectureSummary()" style="background: linear-gradient(135deg, #10b981, #059669);">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Kết thúc & Tóm tắt bài học
+            </button>
+          </div>
+
+          <!-- KHUNG TỔNG KẾT THÔNG MINH 3 PHẦN & CẢNH BÁO KIỂM TRA -->
+          <div id="lectureSummaryBox" class="liquid-glass" style="display: none; margin-top: 20px; padding: 22px; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(6, 78, 59, 0.18);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+              <strong style="color: #fff; font-size: 1.15rem;"><i class="fa-solid fa-clipboard-check" style="color: #34d399;"></i> Tóm Tắt Bài Học Thông Minh (3 Phần)</strong>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="btnCopySummaryMd" class="deck-btn btn-glass-subtle" onclick="copyLectureSummaryMarkdown()" style="display: none; padding: 6px 12px; font-size: 0.8rem;">
+                  <i class="fa-regular fa-copy"></i> Sao chép Markdown
+                </button>
+                <button class="deck-btn btn-glass-subtle" onclick="document.getElementById('lectureSummaryBox').style.display='none'" style="padding: 6px 12px; font-size: 0.8rem;">Đóng</button>
+              </div>
+            </div>
+
+            <div id="summaryLoadingState" style="display: none; padding: 18px; border-radius: 16px; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.35); text-align: center; margin-bottom: 14px;">
+              <i class="fa-solid fa-circle-notch fa-spin" style="color: #38bdf8; font-size: 1.2rem; margin-right: 8px;"></i>
+              <span style="font-size: 0.92rem; color: #7dd3fc; font-weight: 600;">Đang phân tích nội dung bài giảng và tạo bản tóm tắt 3 phần...</span>
+            </div>
+
+            <div id="summaryErrorState" style="display: none; padding: 14px 16px; border-radius: 14px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.4); color: #fecdd3; font-size: 0.9rem; margin-bottom: 14px;"></div>
+
+            <div id="examAlertSection" style="display: none; padding: 14px 18px; border-radius: 16px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); margin-bottom: 16px;">
+              <strong style="color: #f87171; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> LƯU Ý ĐẶC BIỆT: GIÁO VIÊN DẶN VỀ THI CỬ & BÀI TẬP VỀ NHÀ!
+              </strong>
+              <ul id="examAlertList" style="margin-top: 8px; padding-left: 18px; font-size: 0.92rem; color: #fecdd3; line-height: 1.7;"></ul>
+            </div>
+
+            <div id="summarySectionsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- 1. Ý chính (Zusammenfassung) -->
+              <div style="background: rgba(0,0,0,0.35); padding: 16px 18px; border-radius: 16px; border-left: 3px solid #38bdf8;">
+                <strong style="color: #38bdf8; font-size: 1rem; display: block; margin-bottom: 10px;">
+                  1. Ý chính (Zusammenfassung)
+                </strong>
+                <ul id="summaryMainPoints" style="padding-left: 20px; font-size: 0.92rem; color: #f1f5f9; line-height: 1.8;"></ul>
+              </div>
+
+              <!-- 2. Kiến thức quan trọng (Wichtige Informationen) -->
+              <div style="background: rgba(0,0,0,0.35); padding: 16px 18px; border-radius: 16px; border-left: 3px solid #fbbf24;">
+                <strong style="color: #fbbf24; font-size: 1rem; display: block; margin-bottom: 10px;">
+                  2. Kiến thức quan trọng (Wichtige Informationen)
+                </strong>
+                <ul id="summaryImportantInfo" style="padding-left: 20px; font-size: 0.92rem; color: #f1f5f9; line-height: 1.8;"></ul>
+              </div>
+
+              <!-- 3. Từ vựng và thuật ngữ (Wortschatz) -->
+              <div style="background: rgba(0,0,0,0.35); padding: 16px 18px; border-radius: 16px; border-left: 3px solid #10b981;">
+                <strong style="color: #34d399; font-size: 1rem; display: block; margin-bottom: 10px;">
+                  3. Từ vựng và thuật ngữ (Wortschatz)
+                </strong>
+                <div style="overflow-x: auto;">
+                  <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 520px;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.14); text-align: left; color: #94a3b8;">
+                        <th style="padding: 10px 8px;">Từ vựng / Thuật ngữ gốc</th>
+                        <th style="padding: 10px 8px;">Nghĩa tiếng Việt</th>
+                        <th style="padding: 10px 8px;">Ngữ cảnh / Ghi chú ngắn</th>
+                        <th style="padding: 10px 8px; text-align: right;">Sổ tay</th>
+                      </tr>
+                    </thead>
+                    <tbody id="summaryWortschatzBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2 Ô DỊCH TRỰC TIẾP SONG SONG (TIẾNG ĐỨC & TIẾNG VIỆT) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+            <!-- Cột Tiếng Đức -->
+            <div class="liquid-glass" style="padding: 18px 20px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(56, 189, 248, 0.25);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <div style="display: flex; align-items: center; gap: 8px; color: #38bdf8; font-weight: 700; font-size: 0.92rem;">
+                  <i class="fa-solid fa-headphones"></i> Tiếng Đức (Giáo viên nói):
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span id="speechLiveBadge" style="display: none; font-size: 0.72rem; color: #f43f5e; background: rgba(244,63,94,0.15); padding: 2px 7px; border-radius: 6px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-dot fa-fade"></i> Đang nghe...
+                  </span>
+                  <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 8px;">de-DE</span>
+                </div>
+              </div>
+              <div id="liveGermanStream" style="min-height: 180px; max-height: 260px; overflow-y: auto; font-size: 0.98rem; line-height: 1.6; color: #f8fafc; scrollbar-width: thin;">
+                <p style="color: #64748b; font-style: italic;">Nhấn nút "Bắt đầu lắng nghe bài giảng" và để thiết bị gần giáo viên. Khi giáo viên nói tiếng Đức, từng câu nhận dạng sẽ xuất hiện ở đây...</p>
+              </div>
+              <div id="interimSpeechDisplay" style="display: none; margin-top: 8px; padding: 6px 10px; background: rgba(56, 189, 248, 0.1); border-radius: 8px; font-size: 0.85rem; color: #7dd3fc; font-style: italic;"></div>
+            </div>
+
+            <!-- Cột Bản Dịch Tiếng Việt Tức Thì -->
+            <div class="liquid-glass" style="padding: 18px 20px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <div style="display: flex; align-items: center; gap: 8px; color: #34d399; font-weight: 700; font-size: 0.92rem;">
+                  <i class="fa-solid fa-language"></i> Bản dịch Tiếng Việt:
+                </div>
+                <span style="font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.12); padding: 3px 8px; border-radius: 8px;">Dịch tự động song song</span>
+              </div>
+              <div id="liveVietStream" style="min-height: 180px; max-height: 260px; overflow-y: auto; font-size: 0.98rem; line-height: 1.6; color: #f8fafc; scrollbar-width: thin;">
+                <p style="color: #64748b; font-style: italic;">Bản dịch tiếng Việt tương ứng sẽ tự động cập nhật ngay khi giáo viên dứt từng câu giảng.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- BẢN DỊCH TIẾNG VIỆT LIỀN MẠCH (DẠNG TRANG SÁCH DỄ CUỘN DÒ) -->
+          <div class="liquid-glass" style="margin-top: 20px; padding: 24px; background: rgba(8, 12, 24, 0.45); border: 1px solid rgba(255,255,255,0.12);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <div>
+                <h4 style="font-size: 1.15rem; font-weight: 800; color: #fff;">1. Bản dịch tiếng Việt</h4>
+                <span style="font-size: 0.82rem; color: #38bdf8; font-weight: 700;">Giáo viên:</span>
+              </div>
+              <button class="deck-btn btn-glass-subtle" onclick="copyPureVietnameseText()" style="padding: 6px 14px; font-size: 0.8rem;">
+                <i class="fa-regular fa-copy"></i> Sao chép toàn bộ
+              </button>
+            </div>
+
+            <!-- Văn bản tiếng Việt nối tiếp liên tục như tài liệu -->
+            <div id="vietnameseArticleBox" style="min-height: 220px; max-height: 520px; overflow-y: auto; padding: 18px 22px; background: rgba(0, 0, 0, 0.35); border-radius: 18px; border: 1px solid rgba(255,255,255,0.06); font-size: 1.05rem; line-height: 1.85; color: #f1f5f9; scrollbar-width: thin;">
+              <p style="color: #64748b; font-style: italic;">
+                Chưa có nội dung. Khi giáo viên nói tiếng Đức, toàn bộ bản dịch tiếng Việt sẽ tự động nối tiếp liên tục thành từng đoạn văn mạch lạc ở đây để bạn dễ dàng cuộn lướt theo dõi bài giảng...
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 2: LISTENING (PHƯƠNG PHÁP 3 LẦN NGHE & NGUỒN NGHE ĐÀI) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-listening" class="tab-view">
+        
+        <!-- Hướng dẫn phương pháp 3 lần nghe -->
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.2rem; color: #38bdf8; margin-bottom: 8px;">
+            <i class="fa-solid fa-ear-listen"></i> Phương Pháp 3 Lần Nghe (SLA Audio Training)
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+            Người bản xứ ở Đức thường nói nhanh, nuốt âm và dùng nhiều cách diễn đạt khác nhau. Thay vì nghe 1 lần rồi bỏ, hãy áp dụng quy tắc 3 bước:
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 16px; border-left: 3px solid #38bdf8;">
+              <strong style="color: #38bdf8; font-size: 0.95rem; display: block; margin-bottom: 4px;">Lần 1: Nghe Không Phụ Đề</strong>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">Hiểu chủ đề, ai đang nói, nắm ý chính. Không cần hiểu từng từ.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 16px; border-left: 3px solid #f59e0b;">
+              <strong style="color: #fbbf24; font-size: 0.95rem; display: block; margin-bottom: 4px;">Lần 2: Nghe Kèm Phụ Đề Đức</strong>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">Gạch chân từ không nghe được, chú ý cấu trúc cụm từ người Đức sử dụng.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 16px; border-radius: 16px; border-left: 3px solid #10b981;">
+              <strong style="color: #34d399; font-size: 0.95rem; display: block; margin-bottom: 4px;">Lần 3: Nghe Lại Không Phụ Đề</strong>
+              <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">Kiểm tra xem não bộ đã tự động giải mã được bao nhiêu mà không cần nhìn chữ.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trình phát Radio Trực Tiếp 24/7 từ Đức -->
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <strong style="font-size: 1.1rem; color: #fff;"><i class="fa-solid fa-tower-broadcast" style="color: #38bdf8;"></i> Kênh Đài Phát Thanh Quốc Gia Đức (Live 24/7)</strong>
+            <span id="radioStatusText" style="font-size: 0.8rem; color: var(--text-muted);">Đang dừng</span>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 18px; margin-bottom: 16px;">
+            <button class="deck-btn btn-primary-ios" id="radioPlayBtn" onclick="toggleRadioPlay()">
+              <i class="fa-solid fa-play" id="radioPlayIcon"></i> <span id="radioBtnText">Bật Đài</span>
+            </button>
+            <div style="flex: 1; min-width: 200px;">
+              <strong id="currentStationTitle" style="color: #fff; font-size: 0.95rem;">Deutschlandfunk (DLF) - Tin tức & Bình luận</strong>
+            </div>
+            <input type="range" id="radioVolume" min="0" max="1" step="0.05" value="0.8" oninput="setRadioVolume(this.value)" style="width: 90px; accent-color: var(--accent-blue);">
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            <div class="radio-station-card active" onclick="switchRadioStation('https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3', 'Deutschlandfunk (DLF)', this)" style="padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(56, 189, 248, 0.4); cursor: pointer;">
+              <strong style="color: #38bdf8; font-size: 0.9rem;">Deutschlandfunk (DLF)</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Chính luận, văn phong mẫu mực nhất</span>
+            </div>
+            <div class="radio-station-card" onclick="switchRadioStation('https://st03.sslstream.dlf.de/dlf/03/128/mp3/stream.mp3', 'DLF Nova', this)" style="padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+              <strong style="color: #c084fc; font-size: 0.9rem;">DLF Nova</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Giọng trẻ, nhịp độ nói nhanh tự nhiên</span>
+            </div>
+          </div>
+          <audio id="liveRadioAudio" preload="none"></audio>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 3: SPEAKING & PHẢN XẠ ĐI LÀM (SELF-TALK & REPETITION) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-speaking" class="tab-view">
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.2rem; color: #10b981; margin-bottom: 8px;">
+            <i class="fa-solid fa-comments"></i> Luyện Phản Xạ Đi Làm & Tự Nói (Self-Talk)
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+            Sai lầm lớn nhất là dịch từ tiếng Việt sang tiếng Đức trong đầu. Hãy luyện các cụm phản xạ có sẵn trong môi trường công sở / khách sạn:
+          </p>
+
+          <!-- Tình huống 1: Khi đồng nghiệp hỏi tiến độ -->
+          <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <strong style="color: #38bdf8; font-size: 0.95rem;">Tình huống 1: Đồng nghiệp hỏi "Bist du schon fertig?"</strong>
+              <button class="deck-btn btn-glass-subtle" onclick="speakText('Bist du schon fertig?')" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-volume-high"></i> Nghe câu hỏi</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Ja, ich bin fertig.')">
+                <strong>"Ja, ich bin fertig."</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Vâng, tôi xong rồi.</span>
+              </div>
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Fast, ich brauche noch fünf Minuten.')">
+                <strong>"Fast, ich brauche noch fünf Minuten."</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Gần xong, tôi cần thêm 5 phút nữa.</span>
+              </div>
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Nein, ich muss noch etwas erledigen.')">
+                <strong>"Nein, ich muss noch etwas erledigen."</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Chưa, tôi còn phải hoàn thành một việc nữa.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tình huống 2: Khi không hiểu đồng nghiệp nói gì -->
+          <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+            <strong style="color: #fbbf24; font-size: 0.95rem; display: block; margin-bottom: 10px;">Tình huống 2: Đừng chỉ nói "Was?" - Hãy phản xạ lịch sự:</strong>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Kannst du das bitte wiederholen?')">
+                <strong>"Kannst du das bitte wiederholen?"</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Bạn có thể nhắc lại giúp tôi được không?</span>
+              </div>
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Kannst du etwas langsamer sprechen?')">
+                <strong>"Kannst du etwas langsamer sprechen?"</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Bạn nói chậm hơn một chút được không?</span>
+              </div>
+              <div style="padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; cursor: pointer;" onclick="speakText('Habe ich das richtig verstanden?')">
+                <strong>"Habe ich das richtig verstanden?"</strong><span style="display:block; font-size:0.8rem; color:var(--text-muted);">Tôi hiểu như vậy có đúng không?</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tình huống 3: Self-Talk kể lại ngày làm việc (Thì Perfekt) -->
+          <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #34d399; font-size: 0.95rem;">Tình huống 3: Tự nói 5 phút (Self-Talk) sau khi tan làm:</strong>
+              <button class="deck-btn btn-glass-subtle" onclick="speakText('Heute habe ich zuerst die Zimmer gereinigt. Danach habe ich die Treppe geputzt. Anschließend habe ich noch alle Aufgaben erledigt.')" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-volume-high"></i> Nghe mẫu</button>
+            </div>
+            <p style="font-size: 0.95rem; line-height: 1.7; color: #f1f5f9; background: rgba(255,255,255,0.04); padding: 14px; border-radius: 12px;">
+              "Heute habe ich um sieben Uhr angefangen. Zuerst habe ich die Zimmer gereinigt. Danach habe ich die Treppe geputzt. Anschließend habe ich noch die Aufgaben erledigt. Es gab ziemlich viel zu tun, deshalb war ich etwas müde."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 4: SHADOWING (LUYỆN NGỮ ĐIỆU & PHÁT ÂM) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-shadowing" class="tab-view">
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.2rem; color: #a855f7; margin-bottom: 8px;">
+            <i class="fa-solid fa-microphone-lines"></i> Shadowing Studio (20–40 giây)
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+            Nghe và nhắc lại gần như đồng thời với người nói (trễ 0.5s). Đừng chỉ đọc đúng từ, hãy bắt chước cách người Đức thực sự nuốt âm và nhấn trọng âm!
+          </p>
+
+          <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 18px; border-left: 4px solid #a855f7; margin-bottom: 18px;">
+            <p id="shadowText" style="font-size: 1.15rem; line-height: 1.8; color: #fff; font-weight: 500;">
+              "In Anbetracht der aktuellen Lage lässt sich feststellen, dass die Digitalisierung nicht nur Chancen bietet, sondern auch enorme Herausforderungen für kleine Unternehmen mit sich bringt."
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="deck-btn btn-primary-ios" onclick="playCurrentShadow()">
+              <i class="fa-solid fa-play"></i> Nghe & Nói theo
+            </button>
+            <button class="deck-btn btn-glass-subtle" onclick="nextShadowSnippet()">
+              Đoạn tiếp theo <i class="fa-solid fa-forward"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 5: READING (PHƯƠNG PHÁP ĐỌC 2 LẦN) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-reading" class="tab-view">
+        <div class="liquid-glass" style="padding: 20px 24px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <h3 style="font-size: 1.2rem; color: #fbbf24; margin-bottom: 4px;">
+                <i class="fa-solid fa-newspaper"></i> Đọc Báo Tiếng Đức Trực Tiếp (Reader View) & Phương Pháp Đọc 2 Lần
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                Tin tức cập nhật trực tiếp từ RSS <strong>Tagesschau</strong>, <strong>DW Deutsch lernen</strong> và <strong>Nachrichtenleicht</strong>. Bấm vào bất kỳ từ nào hoặc bôi đen cụm từ trong bài báo để tra từ điển & lưu vào <strong>Sổ tay</strong>.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="deck-btn btn-primary-ios news-source-filter-btn" onclick="window.fetchLiveGermanNews('all', this)" style="padding: 8px 14px; font-size: 0.82rem; background: linear-gradient(135deg, #0284c7, #38bdf8);">
+                <i class="fa-solid fa-layer-group"></i> Tất cả nguồn
+              </button>
+              <button class="deck-btn btn-glass-subtle news-source-filter-btn" onclick="window.fetchLiveGermanNews('tagesschau', this)" style="padding: 8px 14px; font-size: 0.82rem;">
+                <i class="fa-solid fa-bolt"></i> Tagesschau (B2-C1)
+              </button>
+              <button class="deck-btn btn-glass-subtle news-source-filter-btn" onclick="window.fetchLiveGermanNews('dw', this)" style="padding: 8px 14px; font-size: 0.82rem;">
+                <i class="fa-solid fa-graduation-cap"></i> DW Deutsch (B1-B2)
+              </button>
+              <button class="deck-btn btn-glass-subtle news-source-filter-btn" onclick="window.fetchLiveGermanNews('nachrichtenleicht', this)" style="padding: 8px 14px; font-size: 0.82rem;">
+                <i class="fa-solid fa-seedling"></i> Nachrichtenleicht (A2-B1)
+              </button>
+              <button class="deck-btn btn-glass-subtle" onclick="window.fetchLiveGermanNews(window.currentNewsSource || 'all')" style="padding: 8px 12px; font-size: 0.82rem;" title="Làm mới RSS">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            <div style="background: rgba(255,255,255,0.04); padding: 10px 14px; border-radius: 12px; border-left: 3px solid #38bdf8;">
+              <strong style="color: #38bdf8; font-size: 0.84rem;">Lần 1: Đọc lướt nắm ý chính</strong>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Đọc liên tục từ đầu đến cuối để hiểu 80% mạch thông tin của bản tin.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 10px 14px; border-radius: 12px; border-left: 3px solid #10b981;">
+              <strong style="color: #34d399; font-size: 0.84rem;">Lần 2: Bấm từ / Bôi đen để học</strong>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Bấm trực tiếp vào từ mới hoặc bôi đen cụm từ hay để tra nghĩa & lưu vào Sổ tay.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- GIAO DIỆN 2 CỘT: DANH SÁCH TIN MỚI NHẤT (TRÁI) & KHUNG READER VIEW CHỮ TO LINH HOẠT FLEX-1 (PHẢI) -->
+        <div class="live-news-grid">
+          <!-- Cột Trái: Danh sách tin mới nhất -->
+          <div class="liquid-glass live-news-sidebar" style="padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.92rem; font-weight: 800; color: #38bdf8;">
+                <i class="fa-solid fa-rss"></i> Tin Mới Nhất (Live RSS)
+              </span>
+              <span style="font-size: 0.74rem; color: #94a3b8;">Cập nhật hằng ngày</span>
+            </div>
+            <div id="liveNewsFeedList" style="overflow-y: auto; flex: 1; padding-right: 4px;">
+              <!-- Nạp động qua /api/news & RSS -->
+            </div>
+          </div>
+
+          <!-- Cột Phải: Khung nội dung bài báo Chế độ đọc (Reader View - flex-1) -->
+          <div class="liquid-glass live-news-reader">
+            <!-- Thanh công cụ phía trên Reader View -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span id="liveNewsReaderSourceBadge" style="font-size: 0.75rem; font-weight: 800; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; padding: 4px 10px; border-radius: 10px; text-transform: uppercase;">
+                  Tagesschau
+                </span>
+                <span id="liveNewsReaderLevelBadge" style="font-size: 0.75rem; font-weight: 700; background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 4px 10px; border-radius: 10px;">
+                  Trình độ B1-B2
+                </span>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button class="deck-btn btn-glass-subtle" onclick="window.readAloudActiveNewsArticle()" style="padding: 8px 14px; font-size: 0.82rem;">
+                  <i class="fa-solid fa-volume-high"></i> Nghe đọc bài
+                </button>
+                <a id="liveNewsOriginalLinkBtn" href="https://www.tagesschau.de" target="_blank" rel="noopener noreferrer" class="deck-btn btn-primary-ios" style="padding: 8px 14px; font-size: 0.82rem; text-decoration: none; background: linear-gradient(135deg, #2563eb, #38bdf8);">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở bài gốc trên trình duyệt
+                </a>
+              </div>
+            </div>
+
+            <!-- Nội dung bài báo sạch (Reader View) -->
+            <div id="liveNewsReaderBody">
+              <div style="padding: 40px 20px; text-align: center; color: #94a3b8;">
+                Chọn một bài báo ở cột bên trái để bắt đầu đọc trực tiếp với chế độ tra từ thông minh.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 6: VOCABULARY (HỌC CỤM TỪ COLLOCATIONS & ACTIVE RECALL) -->
+      <!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+            <!-- ======================================================== -->
+      <!-- TAB 5: TRUNG TÂM TRA CỨU & LUYỆN TỪ VỰNG THỰC CHIẾN (5,243 TỪ) -->
+      <!-- ======================================================== -->
+      <div id="tab-vocab" class="tab-view">
+        
+        <!-- HEADER TRUNG TÂM TỪ VỰNG CHUẨN KAGE STYLE -->
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px; background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(30, 27, 75, 0.5)); border: 1px solid rgba(255, 255, 255, 0.15);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 0.78rem; font-weight: 800; background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em;">
+                  Kho 5,243 Từ Vựng & Cụm Từ Chuẩn Đức (A1 - C1)
+                </span>
+                <span style="font-size: 0.78rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 12px;">
+                  Mạo từ • Collocations • Audio
+                </span>
+              </div>
+              <h2 style="font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">
+                Trung Tâm Tra Cứu & Luyện Nhớ Từ Vựng Thực Chiến
+              </h2>
+            </div>
+
+            <!-- Thanh đếm tiến độ -->
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <div style="background: rgba(0,0,0,0.4); padding: 10px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); text-align: right;">
+                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block;">Từ đang hiển thị:</span>
+                <strong id="filteredWordCountText" style="color: #38bdf8; font-size: 1.15rem;">5,243 từ</strong>
+              </div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); text-align: right;">
+                <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; display: block;">Đã Lưu Vào Sổ Tay:</span>
+                <strong id="hubFavCount" style="color: #fbbf24; font-size: 1.15rem;">0 từ</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- BỘ LỌC CẤP ĐỘ (LEVEL TABS) -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;">
+            <button class="deck-btn btn-primary-ios" id="btnFilterLevelAll" onclick="filterByLevel('ALL', this)" style="padding: 8px 16px; font-size: 0.85rem; background: linear-gradient(135deg, #e11d48, #f43f5e);">
+              Tất Cả (5,243 Từ)
+            </button>
+            <button class="deck-btn btn-glass-subtle" onclick="filterByLevel('B1', this)" style="padding: 8px 16px; font-size: 0.85rem;">
+              Trọng Tâm B1 (1,099 Từ)
+            </button>
+            <button class="deck-btn btn-glass-subtle" onclick="filterByLevel('B2', this)" style="padding: 8px 16px; font-size: 0.85rem;">
+              Nâng Cao B2 (446 Từ)
+            </button>
+            <button class="deck-btn btn-glass-subtle" onclick="filterByLevel('C1', this)" style="padding: 8px 16px; font-size: 0.85rem;">
+              Chuyên Sâu C1 (408 Từ)
+            </button>
+            <button class="deck-btn btn-glass-subtle" onclick="filterByLevel('A1-A2', this)" style="padding: 8px 16px; font-size: 0.85rem;">
+              Nền Tảng A1/A2 (2,956 Từ)
+            </button>
+          </div>
+
+          <!-- 8 LĨNH VỰC ĐỜI SỐNG & HỌC THUẬT (CATEGORY TABS) -->
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 0.78rem; font-weight: 800; color: #cbd5e1; text-transform: uppercase; margin-bottom: 8px;">
+              <i class="fa-solid fa-shapes"></i> Chọn Lĩnh Vực & Ngữ Cảnh:
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; max-height: 120px; overflow-y: auto; padding-bottom: 4px;" id="categoryFilterChips">
+              <!-- Nạp động qua JS -->
+            </div>
+          </div>
+
+          <!-- BỘ LỌC TỪ LOẠI (WORTARTEN) -->
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 0.78rem; font-weight: 800; color: #cbd5e1; text-transform: uppercase; margin-bottom: 8px;">
+              <i class="fa-solid fa-layer-group"></i> CHỌN TỪ LOẠI (WORTARTEN):
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="wortartenFilterGroup">
+              <button class="deck-btn btn-primary-ios" data-wortart="ALL" onclick="filterByWortart('ALL', this)" style="padding: 7px 14px; font-size: 0.82rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #38bdf8);">
+                Tất cả
+              </button>
+              <button class="deck-btn btn-glass-subtle" data-wortart="NOMEN" onclick="filterByWortart('NOMEN', this)" style="padding: 7px 14px; font-size: 0.82rem; border-radius: 12px;">
+                Danh từ (Nomen)
+              </button>
+              <button class="deck-btn btn-glass-subtle" data-wortart="VERBEN" onclick="filterByWortart('VERBEN', this)" style="padding: 7px 14px; font-size: 0.82rem; border-radius: 12px;">
+                Động từ (Verben)
+              </button>
+              <button class="deck-btn btn-glass-subtle" data-wortart="ADJEKTIVE" onclick="filterByWortart('ADJEKTIVE', this)" style="padding: 7px 14px; font-size: 0.82rem; border-radius: 12px;">
+                Tính từ (Adjektive)
+              </button>
+            </div>
+          </div>
+
+          <!-- Ô TÌM KIẾM NHANH TRONG BỘ DỮ LIỆU 5,000 TỪ -->
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="position: relative; flex: 1; min-width: 200px;">
+              <input type="text" id="hubSearchInput" placeholder="Tìm kiếm nhanh bất kỳ từ tiếng Đức, nghĩa tiếng Việt hoặc chủ đề..." oninput="handleHubSearch(this.value)" style="width: 100%; padding: 12px 16px 12px 42px; border-radius: 14px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.95rem; outline: none;">
+              <i class="fa-solid fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+            </div>
+            <button class="deck-btn btn-glass-subtle" onclick="resetHubFilters()" style="padding: 12px 18px; font-size: 0.85rem;">
+              <i class="fa-solid fa-rotate-left"></i> Đặt lại bộ lọc
+            </button>
+          </div>
+        </div>
+
+        <!-- CHẾ ĐỘ 1: DANH SÁCH THẺ (LƯỚI 3 CỘT) -->
+        <div id="vocabListModeContainer">
+          <!-- DANH SÁCH THẺ TỪ VỰNG THỰC CHIẾN (GRID VIEW) -->
+          <div id="vocabCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <!-- Nạp động qua JS -->
+          </div>
+
+          <!-- THANH PHÂN TRANG (PAGINATION CONTROLS) -->
+          <div class="liquid-glass" style="padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(10, 15, 30, 0.65);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 0.88rem; color: #94a3b8;">Trang:</span>
+              <button class="deck-btn btn-glass-subtle" onclick="changeHubPage(-1)" style="padding: 6px 14px; font-size: 0.85rem;"><i class="fa-solid fa-chevron-left"></i> Trước</button>
+              <span id="hubPageIndicator" style="font-size: 0.95rem; font-weight: 700; color: #fff; padding: 4px 12px; background: rgba(255,255,255,0.06); border-radius: 10px;">1 / 175</span>
+              <button class="deck-btn btn-glass-subtle" onclick="changeHubPage(1)" style="padding: 6px 14px; font-size: 0.85rem;">Sau <i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 0.85rem; color: #94a3b8;">Đến trang:</span>
+              <input type="number" id="jumpPageInput" min="1" value="1" style="width: 60px; padding: 6px 8px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff; text-align: center;" onkeyup="if(event.key==='Enter') jumpToHubPage()">
+              <button class="deck-btn btn-primary-ios" onclick="jumpToHubPage()" style="padding: 6px 14px; font-size: 0.85rem;">Đi</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHẾ ĐỘ 2: LUYỆN LẬT THẺ (FLASHCARD TRUNG TÂM) -->
+        <div id="vocabFlashcardModeContainer" style="display: none; max-width: 660px; margin: 12px auto 28px;">
+          <div class="dm-fc-scene">
+            <div id="hubFlashcardBox" class="dm-fc-card" onclick="window.flipHubFlashcard()">
+              <!-- Mặt trước: Từ tiếng Đức + mạo từ + loa + Sổ tay -->
+              <div class="dm-fc-face dm-fc-front liquid-glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                  <span id="fcMetaBadge" style="font-size: 0.78rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.04em;">
+                    B1 • Tổng hợp
+                  </span>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="fcFavBtnFront" onclick="event.stopPropagation(); window.toggleFlashcardFavorite()" title="Lưu vào Sổ tay" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #94a3b8; cursor: pointer;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg>
+                    </button>
+                    <button onclick="event.stopPropagation(); window.speakCurrentFlashcard()" title="Nghe phát âm tiếng Đức" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(56, 189, 248, 0.16); color: #7dd3fc; cursor: pointer;">
+                      <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="text-align: center; padding: 24px 10px;">
+                  <div style="display: flex; justify-content: center; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+                    <span id="fcArtText" style="font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 800; color: #38bdf8;"></span>
+                    <span id="fcWordText" style="font-size: clamp(1.75rem, 4.2vw, 2.5rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; word-break: break-word;">Wort</span>
+                  </div>
+                </div>
+
+                <div style="text-align: center; font-size: 0.8rem; color: #94a3b8;">
+                  <i class="fa-solid fa-rotate"></i> Chạm vào thẻ để lật xem nghĩa tiếng Việt &amp; ví dụ
+                </div>
+              </div>
+
+              <!-- Mặt sau: Nghĩa tiếng Việt & Câu ví dụ -->
+              <div class="dm-fc-face dm-fc-back liquid-glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.78rem; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.04em;">
+                    Nghĩa tiếng Việt &amp; Câu ví dụ
+                  </span>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="fcFavBtnBack" onclick="event.stopPropagation(); window.toggleFlashcardFavorite()" title="Lưu vào Sổ tay" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #94a3b8; cursor: pointer;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg>
+                    </button>
+                    <button onclick="event.stopPropagation(); window.speakCurrentFlashcard()" title="Nghe phát âm tiếng Đức" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background: rgba(16, 185, 129, 0.16); color: #34d399; cursor: pointer;">
+                      <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="text-align: center; padding: 12px 8px;">
+                  <div id="fcViMeaning" style="font-size: clamp(1.25rem, 3.2vw, 1.75rem); font-weight: 800; color: #34d399; margin-bottom: 16px; line-height: 1.35;">
+                    Nghĩa tiếng Việt
+                  </div>
+                  <div id="fcExampleBox" style="background: rgba(0,0,0,0.35); padding: 14px 16px; border-radius: 16px; border-left: 3px solid #38bdf8; text-align: left;">
+                    <div id="fcExampleDe" style="font-size: 0.96rem; color: #f8fafc; font-weight: 500; line-height: 1.55;"></div>
+                    <div id="fcExampleVi" style="font-size: 0.85rem; color: #94a3b8; margin-top: 6px; font-style: italic; line-height: 1.45;"></div>
+                  </div>
+                </div>
+
+                <div style="text-align: center; font-size: 0.8rem; color: #94a3b8;">
+                  <i class="fa-solid fa-rotate-left"></i> Chạm vào thẻ để quay lại mặt trước
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cụm nút điều hướng & Bộ đếm tiến độ -->
+          <div class="liquid-glass" style="margin-top: 18px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(10, 15, 30, 0.65);">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button class="deck-btn btn-glass-subtle" onclick="window.prevHubFlashcard()" style="padding: 9px 14px; font-size: 0.85rem;">
+                <i class="fa-solid fa-chevron-left"></i> Thẻ trước
+              </button>
+              <button class="deck-btn btn-glass-subtle" onclick="window.shuffleHubFlashcards()" style="padding: 9px 14px; font-size: 0.85rem; color: #fbbf24;">
+                <i class="fa-solid fa-shuffle"></i> Đảo ngẫu nhiên
+              </button>
+              <button class="deck-btn btn-primary-ios" onclick="window.nextHubFlashcard()" style="padding: 9px 16px; font-size: 0.85rem; background: linear-gradient(135deg, #2563eb, #38bdf8);">
+                Thẻ tiếp theo <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+            <div id="hubFlashcardCounter" style="font-size: 0.9rem; font-weight: 800; color: #fff; padding: 6px 14px; border-radius: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);">
+              Thẻ 1 / 5,243
+            </div>
+          </div>
+        </div>
+
+      </div>
+<!-- ======================================================== -->
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <!-- TAB 8: TỪ ĐIỂN & AI THÔNG MINH MỞ RỘNG (WIKTIONARY & B1/B2) -->
+      <!-- ======================================================== -->
+      <div id="tab-dictionary" class="tab-view">
+        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">
+                <i class="fa-solid fa-magnifying-glass"></i> Tra Cứu Từ Điển & AI Mở Rộng Không Giới Hạn
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                Kết hợp kho từ vựng Goethe B1/B2 chuẩn, Wiktionary tiếng Đức mở rộng và AI dịch giải thích ngữ cảnh.
+              </p>
+            </div>
+            <span style="font-size: 0.78rem; background: rgba(56, 189, 248, 0.15); color: #7dd3fc; padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.3);">
+              <i class="fa-solid fa-mobile-screen"></i> Chuẩn Responsive Mobile & Web
+            </span>
+          </div>
+
+          <!-- Thanh tìm kiếm từ vựng (Tra cứu 2 chiều Đức - Việt & Việt - Đức) -->
+          <div style="display: flex; gap: 10px; margin-bottom: 18px;">
+            <div style="position: relative; flex: 1;">
+              <input type="text" id="dictSearchInput" placeholder="Nhập từ tiếng Đức HOẶC tiếng Việt (Ví dụ: Voraussetzung, erledigen, dọn dẹp, hoàn thành)..." onkeyup="if(event.key==='Enter') searchDictionaryWord()" style="width: 100%; padding: 14px 18px 14px 44px; border-radius: 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 1rem; outline: none;">
+              <i class="fa-solid fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+            </div>
+            <button class="deck-btn btn-primary-ios" onclick="searchDictionaryWord()" style="padding: 12px 24px; background: linear-gradient(135deg, #0284c7, #38bdf8);">
+              <i class="fa-solid fa-bolt"></i> Tra Cứu
+            </button>
+          </div>
+
+          <!-- Từ khóa gợi ý nhanh -->
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Gợi ý B1/B2:</span>
+            <span class="dict-chip" onclick="quickDictLookup('Voraussetzung')" style="padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); font-size: 0.8rem; cursor: pointer; color: #cbd5e1;">die Voraussetzung</span>
+            <span class="dict-chip" onclick="quickDictLookup('Auseinandersetzung')" style="padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); font-size: 0.8rem; cursor: pointer; color: #cbd5e1;">die Auseinandersetzung</span>
+            <span class="dict-chip" onclick="quickDictLookup('Nachhaltigkeit')" style="padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); font-size: 0.8rem; cursor: pointer; color: #cbd5e1;">die Nachhaltigkeit</span>
+            <span class="dict-chip" onclick="quickDictLookup('erledigen')" style="padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); font-size: 0.8rem; cursor: pointer; color: #cbd5e1;">erledigen</span>
+            <span class="dict-chip" onclick="quickDictLookup('sich kümmern um')" style="padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); font-size: 0.8rem; cursor: pointer; color: #cbd5e1;">sich kümmern um</span>
+          </div>
+
+          <!-- Khung hiển thị kết quả tra cứu chi tiết -->
+          <div id="dictResultCard" class="liquid-glass" style="display: none; padding: 22px; background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(56, 189, 248, 0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span id="dictResArticle" style="font-size: 1.1rem; font-weight: 800; color: #f43f5e;">die</span>
+                  <h4 id="dictResWord" style="font-size: 1.8rem; font-weight: 800; color: #fff;">Voraussetzung</h4>
+                  <span id="dictResPlural" style="font-size: 0.9rem; color: #94a3b8; font-style: italic;">(die Voraussetzungen)</span>
+                </div>
+                <div id="dictResPhonetic" style="font-size: 0.85rem; color: #38bdf8; margin-top: 2px;">/foˈʁaʊ̯sˌzɛtsʊŋ/</div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button class="deck-btn btn-glass-subtle" onclick="speakText(document.getElementById('dictResWord').innerText)" style="padding: 8px 14px; font-size: 0.85rem;">
+                  <i class="fa-solid fa-volume-high"></i> Nghe đọc
+                </button>
+                <button class="deck-btn btn-glass-subtle" id="btnFavoriteDict" onclick="toggleFavoriteCurrentWord()" title="Lưu vào Sổ tay" style="padding: 8px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg> Lưu vào Sổ tay
+                </button>
+              </div>
+            </div>
+
+            <!-- Nghĩa tiếng Việt & Cấp độ -->
+            <div style="background: rgba(255,255,255,0.04); padding: 14px 18px; border-radius: 14px; margin-bottom: 14px; border-left: 3px solid #10b981;">
+              <div style="font-size: 0.78rem; font-weight: 700; color: #34d399; text-transform: uppercase;">Ý nghĩa tiếng Việt</div>
+              <div id="dictResVi" style="font-size: 1.15rem; font-weight: 600; color: #fff; margin-top: 4px;">Điều kiện tiên quyết, yêu cầu bắt buộc</div>
+              <div id="dictResLevelTopic" style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Trình độ B1 • Chủ đề: Sự nghiệp & Công việc</div>
+            </div>
+
+            <!-- Câu ví dụ thực tế -->
+            <div style="background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 14px;">
+              <div style="font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;">Ví dụ câu hoàn chỉnh</div>
+              <div id="dictResSentenceDe" style="font-size: 1rem; color: #fff; margin-top: 4px; font-weight: 500;">
+                "Gute Deutschkenntnisse sind eine feste Voraussetzung für eine Arbeitsstelle in Deutschland."
+              </div>
+              <div id="dictResSentenceVi" style="font-size: 0.9rem; color: #cbd5e1; margin-top: 4px; font-style: italic;">
+                ➔ Kỹ năng tiếng Đức tốt là điều kiện tiên quyết cho một vị trí công việc tại Đức.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB 9: KHO TỪ VỰNG & CỤM TỪ YÊU THÍCH (FAVORITES) -->
+      <!-- ======================================================== -->
+      <div id="tab-favorites" class="tab-view">
+        <div class="liquid-glass" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(251, 191, 36, 0.25)" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2" fill="#fbbf24"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg> Sổ Tay Từ Vựng & Cụm Từ Của Bạn
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                Lưu trữ bền vững các từ vựng và câu mẫu bạn đã lưu từ Kho 5,243 từ và khi đọc báo tiếng Đức.
+              </p>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="deck-btn btn-glass-subtle" onclick="exportFavorites()" style="padding: 8px 14px; font-size: 0.82rem;">
+                <i class="fa-solid fa-file-export"></i> Xuất danh sách
+              </button>
+              <button class="deck-btn btn-glass-subtle" onclick="clearAllFavorites()" style="padding: 8px 14px; font-size: 0.82rem; color: #f87171;">
+                <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+              </button>
+            </div>
+          </div>
+
+          <div id="favoritesListContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
+            <!-- Nạp động qua JS từ localStorage -->
+          </div>
+        </div>
+      </div>
+      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
+      <!-- ======================================================== -->
+      
+
+      <!-- ======================================================== -->
+      <div id="tab-routine" class="tab-view">
+        <div class="liquid-glass" style="padding: 24px;">
+          <h3 style="font-size: 1.2rem; color: #ec4899; margin-bottom: 8px;">
+            <i class="fa-solid fa-calendar-check"></i> Kế Hoạch 60 Phút Học Mỗi Ngày (Không Bỏ Cuộc)
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+            Học đều đặn và có sự lặp lại quan trọng hơn việc học dồn 3–4 tiếng rồi bỏ cuộc. Lịch mẫu tối ưu cho người bận rộn:
+          </p>
+
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; color: #94a3b8;">
+                <th style="padding: 10px;">Thời gian</th>
+                <th style="padding: 10px;">Kỹ năng</th>
+                <th style="padding: 10px;">Mục tiêu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">10 phút</td>
+                <td style="padding: 10px;">Ôn cụm từ vựng</td>
+                <td style="padding: 10px;">Tự nhớ lại chủ động (Active Recall)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">15 phút</td>
+                <td style="padding: 10px;">Listening</td>
+                <td style="padding: 10px;">Phương pháp 3 lần nghe một đoạn ngắn</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">10 phút</td>
+                <td style="padding: 10px;">Reading</td>
+                <td style="padding: 10px;">Đọc 2 lần một mẩu tin hoặc hướng dẫn công việc</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">10 phút</td>
+                <td style="padding: 10px;">Speaking</td>
+                <td style="padding: 10px;">Tự nói (Self-Talk) kể lại ngày làm việc</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">10 phút</td>
+                <td style="padding: 10px;">Shadowing</td>
+                <td style="padding: 10px;">Nhại ngữ điệu người bản ngữ (20-40 giây)</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; color: #38bdf8; font-weight: 700;">5 phút</td>
+                <td style="padding: 10px;">Tổng kết</td>
+                <td style="padding: 10px;">Ghi lại 3 cụm từ ấn tượng nhất trong ngày</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- POPUP MODAL TRA CỨU TỪ ĐIỂN NHANH TRỰC TIẾP (QUICK DICT MODAL) -->
+  <div id="quickDictModalOverlay" onclick="if(event.target===this) closeQuickDictModal()" style="display: none; pointer-events: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(10px); z-index: 9999; justify-content: center; align-items: center; padding: 18px; box-sizing: border-box;">
+    <div class="liquid-glass" style="pointer-events: auto; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; background: linear-gradient(135deg, rgba(13, 19, 38, 0.96), rgba(24, 21, 62, 0.94)); border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.85); border-radius: 24px; padding: 22px; animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);">
+      
+      <!-- Header Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 0.76rem; font-weight: 800; background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; padding: 4px 10px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.03em;">
+            <i class="fa-solid fa-bolt"></i> Tra Cứu Từ Điển & AI
+          </span>
+          <span id="modalDictPosBadge" style="font-size: 0.75rem; color: #cbd5e1; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); padding: 3px 8px; border-radius: 8px;">
+            Nomen
+          </span>
+          <span id="modalDictLevelBadge" style="font-size: 0.75rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 8px;">
+            B1/B2
+          </span>
+        </div>
+        <button onclick="closeQuickDictModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s;" title="Đóng popup (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Trạng thái Loading / Error khi AI đang phân tích -->
+      <div id="modalLoadingState" style="display: none; padding: 16px; border-radius: 14px; background: rgba(56, 189, 248, 0.08); border: 1px dashed rgba(56, 189, 248, 0.35); text-align: center; margin-bottom: 14px;">
+        <i class="fa-solid fa-circle-notch fa-spin" style="color: #38bdf8; font-size: 1.2rem; margin-right: 8px;"></i>
+        <span style="font-size: 0.88rem; color: #7dd3fc; font-weight: 500;">Hệ thống AI đang tra cứu nghĩa & ngữ cảnh mở rộng...</span>
+      </div>
+
+      <div id="modalErrorState" style="display: none; padding: 12px 14px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 0.85rem; margin-bottom: 14px;">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> <span id="modalErrorText">Không thể kết nối dịch mở rộng. Đang hiển thị kết quả cơ bản.</span>
+      </div>
+
+      <!-- Tiêu đề: Từ tiếng Đức, Mạo từ, Dạng số nhiều & Nghe / Yêu thích -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+            <span id="modalDictArt" style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">der</span>
+            <h3 id="modalDictWord" style="font-size: 1.8rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">Wort</h3>
+            <span id="modalDictPlural" style="font-size: 0.95rem; color: #94a3b8; font-style: italic;"></span>
+          </div>
+          <div id="modalDictPhonetic" style="font-size: 0.82rem; color: #38bdf8; margin-top: 2px;"></div>
+          <div id="modalDictTopic" style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">
+            <i class="fa-solid fa-shapes"></i> Ngữ cảnh: <span id="modalDictTopicName" style="color: #cbd5e1; font-weight: 600;">Tổng hợp</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="deck-btn btn-glass-subtle" onclick="speakText(document.getElementById('modalDictWord').innerText)" style="padding: 8px 14px; font-size: 0.85rem;" title="Nghe phát âm chuẩn tiếng Đức">
+            <i class="fa-solid fa-volume-high"></i> Nghe đọc
+          </button>
+          <button class="deck-btn btn-glass-subtle" id="btnFavoriteModal" onclick="toggleFavoriteFromModal()" title="Lưu vào Sổ tay" style="padding: 8px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg> Lưu vào Sổ tay
+          </button>
+        </div>
+      </div>
+
+      <!-- Khung Ý Nghĩa Tiếng Việt -->
+      <div style="background: rgba(255, 255, 255, 0.04); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; border-left: 3px solid #10b981;">
+        <div style="font-size: 0.72rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between;">
+          <span><i class="fa-solid fa-language"></i> Ý Nghĩa Tiếng Việt</span>
+          <span id="modalDictGrammarTip" style="color: #94a3b8; font-size: 0.72rem; font-weight: normal;"></span>
+        </div>
+        <div id="modalDictViMeaning" style="font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.45;">
+          Đang tra cứu nghĩa...
+        </div>
+        <div id="modalDictContextDesc" style="font-size: 0.82rem; color: #cbd5e1; margin-top: 6px; line-height: 1.4; display: none;"></div>
+      </div>
+
+      <!-- Khung Ví Dụ Câu Hoàn Chỉnh & Bản Dịch -->
+      <div id="modalDictExampleBox" style="background: rgba(0, 0, 0, 0.35); border-radius: 14px; padding: 14px 16px; border-left: 3px solid #38bdf8; margin-bottom: 12px;">
+        <div style="font-size: 0.72rem; font-weight: 800; color: #7dd3fc; text-transform: uppercase; margin-bottom: 4px;">
+          <i class="fa-solid fa-quote-left"></i> Ví Dụ Câu Trong Thực Tế:
+        </div>
+        <div id="modalDictSentenceDe" style="color: #f8fafc; font-size: 0.95rem; font-weight: 500; line-height: 1.5; margin-bottom: 6px;">
+          ""
+        </div>
+        <div id="modalDictSentenceVi" style="color: #34d399; font-size: 0.88rem; font-weight: 500; line-height: 1.45;">
+          ➤ Đang tải dịch câu...
+        </div>
+      </div>
+
+      <!-- Khung Cụm Từ Thực Tế / Từ Đồng Nghĩa & Cách Diễn Đạt Liên Quan -->
+      <div id="modalDictCollocsBox" style="display: none; background: rgba(0, 0, 0, 0.25); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #a7f3d0; text-transform: uppercase; margin-bottom: 6px;">
+          <i class="fa-solid fa-link"></i> Cụm Từ & Cách Diễn Đạt Liên Quan:
+        </div>
+        <div id="modalDictCollocsChips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+      </div>
+
+      <!-- Footer Modal -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+        <span style="font-size: 0.75rem; color: #64748b;"><i class="fa-solid fa-circle-info"></i> Tra cứu tại chỗ không chuyển trang</span>
+        <button class="deck-btn btn-glass-subtle" onclick="openDeepDictFromModal()" style="padding: 6px 14px; font-size: 0.8rem;">
+          <i class="fa-solid fa-magnifying-glass"></i> Tra Sâu Trong Tab Từ Điển AI
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes modalPopIn {
+      0% { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+
+  <script src="./vocab_5000_data.js"></script>
+  <script src="./vocab_hub.js"></script>
+  <script src="./yt_floating_player.js"></script>
+  <script>
+    // ==========================================
+    // 1. DATA: DANH SÁCH 50+ CỤM TỪ (Nomen-Verb-Verbindungen & Giao tiếp Đức B1/B2)
+    // ==========================================
+    let collocationList = [
+      // 1-10: Công việc & Nhiệm vụ hàng ngày
+      { topic: "Công việc", de: "eine Aufgabe erledigen", vi: "Hoàn thành một nhiệm vụ", ex: "Ich muss heute noch diese wichtige Aufgabe erledigen." },
+      { topic: "Quan tâm / Chăm sóc", de: "sich um etwas kümmern", vi: "Chăm lo / Phụ trách một việc gì", ex: "Keine Sorge, ich kümmere mich darum." },
+      { topic: "Kiểm tra lỗi", de: "einen Fehler feststellen", vi: "Xác định / Phát hiện ra lỗi sai", ex: "Der Kollege hat einen kleinen Fehler festgestellt." },
+      { topic: "Bữa sáng / Khách sạn", de: "das Frühstück vorbereiten", vi: "Chuẩn bị bữa sáng", ex: "Um sechs Uhr bereiten wir das Frühstück vor." },
+      { topic: "Giao tiếp công sở", de: "jemandem Bescheid geben", vi: "Báo cho ai đó biết thông tin", ex: "Gib mir bitte Bescheid, wenn du fertig bist." },
+      { topic: "Dọn dẹp", de: "die Zimmer kontrollieren", vi: "Kiểm tra phòng ốc sau khi dọn", ex: "Zuerst putzen wir, danach kontrollieren wir die Zimmer." },
+      { topic: "Quyết định", de: "eine Entscheidung treffen", vi: "Đưa ra một quyết định", ex: "Wir müssen heute noch eine endgültige Entscheidung treffen." },
+      { topic: "Lời khuyên", de: "einen Rat geben", vi: "Đưa ra lời khuyên", ex: "Kannst du mir einen guten Rat geben?" },
+      { topic: "Câu hỏi", de: "eine Frage stellen", vi: "Đặt ra một câu hỏi", ex: "Darf ich Ihnen dazu eine kurze Frage stellen?" },
+      { topic: "Trách nhiệm", de: "die Verantwortung übernehmen", vi: "Nhận / Chịu trách nhiệm", ex: "Er übernimmt die Verantwortung für das Projekt." },
+
+      // 11-20: Nomen-Verb-Verbindungen chuẩn B2 Goethe/telc
+      { topic: "Hành động", de: "Maßnahmen ergreifen", vi: "Áp dụng / Thực hiện các biện pháp", ex: "Die Geschäftsführung muss sofort wirksame Maßnahmen ergreifen." },
+      { topic: "Đóng góp", de: "einen Beitrag leisten", vi: "Đóng góp công sức / ý kiến", ex: "Jeder Mitarbeiter leistet einen wichtigen Beitrag zum Teamerfolg." },
+      { topic: "Sẵn sàng", de: "zur Verfügung stehen", vi: "Có sẵn để sử dụng / Sẵn sàng giúp", ex: "Ich stehe Ihnen für weitere Fragen gerne zur Verfügung." },
+      { topic: "Cung cấp", de: "zur Verfügung stellen", vi: "Cung cấp cái gì cho ai dùng", ex: "Das Hotel stellt den Gästen kostenloses WLAN zur Verfügung." },
+      { topic: "Ảnh hưởng", de: "Einfluss nehmen auf", vi: "Gây ảnh hưởng / Tác động lên (+ Akk)", ex: "Moderne Medien nehmen großen Einfluss auf unsere Denkweise." },
+      { topic: "Ấn tượng", de: "einen Eindruck hinterlassen", vi: "Để lại một ấn tượng sâu sắc", ex: "Der neue Bewerber hat einen sehr guten Eindruck hinterlassen." },
+      { topic: "Nghi ngờ", de: "in Frage stellen", vi: "Nghi ngờ / Đặt dấu hỏi về điều gì", ex: "Niemand stellt seine fachliche Kompetenz in Frage." },
+      { topic: "Khả năng", de: "in Betracht ziehen", vi: "Cân nhắc / Tính đến một khả năng", ex: "Wir müssen auch andere Optionen in Betracht ziehen." },
+      { topic: "Thực hiện", de: "in die Tat umsetzen", vi: "Biến kế hoạch / ý tưởng thành hiện thực", ex: "Jetzt ist es an der Zeit, den Plan in die Tat umzusetzen." },
+      { topic: "Hy vọng", de: "die Hoffnung aufgeben", vi: "Từ bỏ hy vọng", ex: "Wir dürfen jetzt auf keinen Fall die Hoffnung aufgeben." },
+
+      // 21-30: Giao tiếp đi làm, khách sạn, nhà hàng
+      { topic: "Bàn giao", de: "die Übergabe machen", vi: "Thực hiện bàn giao ca làm việc", ex: "Kommst du zehn Minuten früher, damit wir die Übergabe machen können?" },
+      { topic: "Liên lạc", de: "in Kontakt treten mit", vi: "Thiết lập liên lạc với ai", ex: "Ich bin bereits mit dem Kundenservice in Kontakt getreten." },
+      { topic: "Thông báo", de: "in Kenntnis setzen", vi: "Thông báo chính thức cho ai biết", ex: "Bitte setzen Sie mich über alle Änderungen in Kenntnis." },
+      { topic: "Hiểu lầm", de: "ein Missverständnis aufklären", vi: "Làm sáng tỏ / Giải tỏa hiểu lầm", ex: "Wir konnten das Missverständnis im Gespräch schnell aufklären." },
+      { topic: "Thỏa thuận", de: "eine Vereinbarung treffen", vi: "Đạt được một thỏa thuận chung", ex: "Die beiden Partner haben eine feste Vereinbarung getroffen." },
+      { topic: "Cuộc hẹn", de: "einen Termin vereinbaren", vi: "Hẹn trước một cuộc hẹn / lịch gặp", ex: "Ich möchte gerne einen Termin beim Arzt vereinbaren." },
+      { topic: "Đề nghị", de: "einen Vorschlag machen", vi: "Đưa ra một lời đề xuất / kiến nghị", ex: "Darf ich dazu einen konstruktiven Vorschlag machen?" },
+      { topic: "Phàn nàn", de: "eine Beschwerde einreichen", vi: "Gửi đơn khiếu nại / phàn nàn", ex: "Der Gast hat eine formelle Beschwerde eingereicht." },
+      { topic: "Chú ý", de: "Aufmerksamkeit schenken", vi: "Dành sự chú ý / Lắng nghe ai", ex: "Bitte schenken Sie den Sicherheitsanweisungen Aufmerksamkeit." },
+      { topic: "Nguy cơ", de: "ein Risiko eingehen", vi: "Chấp nhận rủi ro / mạo hiểm", ex: "Im Geschäftsleben muss man manchmal ein kalkuliertes Risiko eingehen." },
+
+      // 31-40: Tranh luận & Bày tỏ quan điểm B2
+      { topic: "Ý kiến", de: "eine Meinung vertreten", vi: "Bảo vệ / Thể hiện quan điểm", ex: "Er vertritt die Meinung, dass Bildung kostenlos sein sollte." },
+      { topic: "Quan điểm", de: "einen Standpunkt einnehmen", vi: "Giữ một lập trường / góc nhìn", ex: "Zu diesem Thema nehme ich einen klaren Standpunkt ein." },
+      { topic: "Đàm phán", de: "Verhandlungen führen", vi: "Tiến hành đàm phán / thương lượng", ex: "Die Gewerkschaft führt derzeit Verhandlungen über mehr Gehalt." },
+      { topic: "Nói chuyện", de: "ein Gespräch führen", vi: "Thực hiện một cuộc trò chuyện / phỏng vấn", ex: "Gestern habe ich ein langes Gespräch mit meinem Chef geführt." },
+      { topic: "Rút ra kết luận", de: "einen Schluss ziehen", vi: "Rút ra một kết luận", ex: "Aus diesen Fakten lässt sich nur ein logischer Schluss ziehen." },
+      { topic: "Bảo vệ", de: "in Schutz nehmen", vi: "Bênh vực / Bảo vệ ai trước chỉ trích", ex: "Der Teamleiter nahm die Mitarbeiterin sofort in Schutz." },
+      { topic: "Thứ tự ưu tiên", de: "Prioritäten setzen", vi: "Xác định các việc ưu tiên hàng đầu", ex: "Bei viel Arbeit muss man klare Prioritäten setzen." },
+      { topic: "Lưu ý", de: "Rücksicht nehmen auf", vi: "Để ý / Tôn trọng quyền lợi của người khác", ex: "In der Nachtschicht müssen wir Rücksicht auf die schlafenden Gäste nehmen." },
+      { topic: "Áp lực", de: "unter Druck stehen", vi: "Đang chịu nhiều áp lực / căng thẳng", ex: "Vor dem Jahresabschluss stehen viele Angestellte unter Druck." },
+      { topic: "Thất bại", de: "Kritik üben an", vi: "Đưa ra lời chỉ trích / góp ý phê bình", ex: "Die Experten üben scharfe Kritik an dem neuen Gesetz." },
+
+      // 41-50: Đời sống & Hội nhập Đức
+      { topic: "Hòa nhập", de: "Freundschaften schließen", vi: "Kết bạn / Xây dựng tình bạn", ex: "Es dauert oft ein bisschen, um in Deutschland enge Freundschaften zu schließen." },
+      { topic: "Trợ giúp", de: "Hilfe leisten", vi: "Hỗ trợ / Giúp đỡ người gặp khó", ex: "In Notsituationen ist jeder Bürger verpflichtet, Hilfe zu leisten." },
+      { topic: "Bắt đầu", de: "den Anfang machen", vi: "Mở đầu / Khởi xướng trước", ex: "Wer möchte den Anfang machen und das Thema vorstellen?" },
+      { topic: "Biết ơn", de: "Dankbarkeit ausdrücken", vi: "Bày tỏ lòng biết ơn", ex: "Ich möchte Ihnen meine aufrichtige Dankbarkeit ausdrücken." },
+      { topic: "Thành công", de: "Erfolg erzielen", vi: "Đạt được thành công lớn", ex: "Mit kontinuierlichem Training wird man schnell spürbare Erfolge erzielen." },
+      { topic: "Từ bỏ", de: "Verzicht leisten auf", vi: "Chấp nhận từ bỏ một quyền lợi", ex: "Wegen der Umwelt leisten viele Menschen Verzicht auf das Auto." },
+      { topic: "Giải pháp", de: "eine Lösung finden", vi: "Tìm ra giải pháp cho một vấn đề", ex: "Gemeinsam werden wir sicherlich eine gute Lösung finden." },
+      { topic: "Nghi ngờ", de: "Zweifel hegen an", vi: "Mang trong lòng mối hoài nghi", ex: "Ich hege noch immer Zweifel an der Machbarkeit des Plans." },
+      { topic: "Lời hứa", de: "ein Versprechen halten", vi: "Giữ đúng lời hứa", ex: "Ein professioneller Dienstleister hält stets sein Versprechen." },
+      { topic: "Tạm biệt", de: "Abschied nehmen von", vi: "Nói lời tạm biệt / Chia tay ai", ex: "Gestern mussten wir Abschied von unserem geschätzten Kollegen nehmen." }
+    ];
+    let currentCollocIdx = 0;
+
+    // KHO YÊU THÍCH LOCALSTORAGE
+    function getFavorites() {
+      try {
+        return JSON.parse(localStorage.getItem('deutschmaster_favorites') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function saveFavorites(favs) {
+      localStorage.setItem('deutschmaster_favorites', JSON.stringify(favs));
+      updateFavBadge();
+    }
+
+    function updateFavBadge() {
+      const favs = getFavorites();
+      const b = document.getElementById('favBadgeCount');
+      if (b) b.innerText = favs.length;
+    }
+
+    function isFavorited(deText) {
+      const favs = getFavorites();
+      return favs.some(f => f.de.toLowerCase().trim() === deText.toLowerCase().trim());
+    }
+
+    function toggleFavoriteItem(itemObj) {
+      let favs = getFavorites();
+      const idx = favs.findIndex(f => f.de.toLowerCase().trim() === itemObj.de.toLowerCase().trim());
+      if (idx >= 0) {
+        favs.splice(idx, 1);
+        saveFavorites(favs);
+        return false;
+      } else {
+        favs.push({
+          de: itemObj.de,
+          vi: itemObj.vi,
+          type: itemObj.type || 'Cụm từ',
+          ex: itemObj.ex || '',
+          date: new Date().toLocaleDateString()
+        });
+        saveFavorites(favs);
+        return true;
+      }
+    }
+
+    window.showAppToast = function(message, type = 'saved') {
+      let toast = document.getElementById('dmAppToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'dmAppToast';
+        toast.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10050; display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-radius: 14px; font-size: 0.88rem; font-weight: 600; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 14px 36px rgba(0,0,0,0.45); pointer-events: none; opacity: 0; transform: translateY(-10px); transition: opacity 0.2s ease, transform 0.2s ease; max-width: calc(100vw - 32px);';
+        document.body.appendChild(toast);
+      }
+      const isSaved = type === 'saved';
+      toast.style.background = isSaved ? 'rgba(20, 28, 46, 0.94)' : 'rgba(30, 41, 59, 0.94)';
+      toast.style.border = isSaved ? '1px solid rgba(251, 191, 36, 0.55)' : '1px solid rgba(148, 163, 184, 0.35)';
+      toast.style.color = isSaved ? '#fde68a' : '#cbd5e1';
+      toast.innerHTML = `${getNotebookIconSvg(isSaved, 16)}<span>${message}</span>`;
+
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+      clearTimeout(window.__dmToastTimer);
+      window.__dmToastTimer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+      }, 2400);
+    };
+
+    function getNotebookIconSvg(isSaved, size = 16) {
+      if (isSaved) {
+        return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="rgba(251, 191, 36, 0.28)" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;"><path d="M10 2v8l3-3 3 3V2" fill="#fbbf24"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg>`;
+      }
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;"><path d="M10 2v8l3-3 3 3V2"></path><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path></svg>`;
+    }
+
+    function toggleFavoriteCollocCard() {
+      const current = collocationList[currentCollocIdx];
+      const added = toggleFavoriteItem({
+        de: current.de,
+        vi: current.vi,
+        type: 'Cụm từ (Collocation)',
+        ex: current.ex
+      });
+      updateCollocHeartUI();
+      showAppToast(added ? `Đã lưu "${current.de}" vào Sổ tay` : `Đã xóa "${current.de}" khỏi Sổ tay`, added ? 'saved' : 'removed');
+    }
+
+    function updateCollocHeartUI() {
+      if (!collocationList.length) return;
+      const current = collocationList[currentCollocIdx];
+      const icon = document.getElementById('favCollocHeartIcon');
+      if (!icon) return;
+      const saved = isFavorited(current.de);
+      icon.outerHTML = getNotebookIconSvg(saved, 16);
+    }
+
+    function renderCurrentCollocCard() {
+      if (!collocationList.length) return;
+      const item = collocationList[currentCollocIdx];
+      document.getElementById('cardCollocTopic').innerText = item.topic;
+      document.getElementById('cardCollocDe').innerText = item.de;
+      document.getElementById('cardCollocVi').innerText = item.vi;
+      const exElem = document.getElementById('cardCollocEx');
+      if (exElem) exElem.innerText = `Ví dụ: "${item.ex}"`;
+      const counter = document.getElementById('collocCounterPill');
+      if (counter) counter.innerText = `Thẻ ${currentCollocIdx + 1} / ${collocationList.length}`;
+      updateCollocHeartUI();
+    }
+
+    function nextCollocCard() {
+      if (!collocationList.length) return;
+      currentCollocIdx = (currentCollocIdx + 1) % collocationList.length;
+      renderCurrentCollocCard();
+    }
+
+    function prevCollocCard() {
+      if (!collocationList.length) return;
+      currentCollocIdx = (currentCollocIdx - 1 + collocationList.length) % collocationList.length;
+      renderCurrentCollocCard();
+    }
+
+    function shuffleCollocCards() {
+      if (!collocationList.length) return;
+      collocationList.sort(() => Math.random() - 0.5);
+      currentCollocIdx = 0;
+      renderCurrentCollocCard();
+    }
+
+    // TÌNH HUỐNG GIAO TIẾP & SELF-TALK ĐỔI MỚI THEO NGÀY
+    const speakingDailyPool = [
+      {
+        scenario: "Tình huống: Đồng nghiệp hỏi tiến độ công việc",
+        question: "Bist du schon fertig?",
+        options: [
+          { de: "Ja, ich bin fertig.", vi: "Vâng, tôi xong rồi." },
+          { de: "Fast, ich brauche noch fünf Minuten.", vi: "Gần xong, tôi cần thêm 5 phút nữa." },
+          { de: "Nein, ich muss noch etwas erledigen.", vi: "Chưa, tôi còn phải hoàn thành một việc nữa." }
+        ]
+      },
+      {
+        scenario: "Tình huống: Không hiểu hoặc người Đức nói quá nhanh",
+        question: "Wie bitte? (Phản xạ lịch sự)",
+        options: [
+          { de: "Kannst du das bitte wiederholen?", vi: "Bạn có thể nhắc lại giúp tôi được không?" },
+          { de: "Kannst du etwas langsamer sprechen?", vi: "Bạn nói chậm hơn một chút được không?" },
+          { de: "Habe ich das richtig verstanden?", vi: "Tôi hiểu như vậy có đúng không?" }
+        ]
+      },
+      {
+        scenario: "Tình huống: Yêu cầu giúp đỡ hoặc bàn giao ca làm",
+        question: "Kannst du mir kurz helfen?",
+        options: [
+          { de: "Ja klar, worum geht es?", vi: "Được chứ, có việc gì vậy bạn?" },
+          { de: "Moment bitte, ich bin gleich bei dir.", vi: "Chờ tôi một chút, tôi sang với bạn ngay." },
+          { de: "Ich habe die Übergabe für dich vorbereitet.", vi: "Tôi đã chuẩn bị sẵn phần bàn giao ca cho bạn rồi." }
+        ]
+      },
+      {
+        scenario: "Tình huống: Báo cáo sự cố hoặc lỗi sai phát sinh",
+        question: "Es gibt hier ein kleines Problem.",
+        options: [
+          { de: "Ich habe einen Fehler im System festgestellt.", vi: "Tôi phát hiện ra một lỗi trong hệ thống." },
+          { de: "Keine Sorge, ich kümmere mich sofort darum.", vi: "Đừng lo, tôi sẽ xử lý việc đó ngay." },
+          { de: "Soll ich dem Chef Bescheid geben?", vi: "Tôi có nên báo cho sếp biết không?" }
+        ]
+      }
+    ];
+
+    function renderDailySpeakingScenarios() {
+      const container = document.getElementById('speakingScenariosContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      speakingDailyPool.forEach((sc, sIdx) => {
+        const box = document.createElement('div');
+        box.style.cssText = "background: rgba(0,0,0,0.3); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;";
+
+        let optionsHtml = '';
+        sc.options.forEach(opt => {
+          const isFav = isFavorited(opt.de);
+          optionsHtml += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 12px; margin-bottom: 8px;">
+              <div style="cursor: pointer; flex: 1;" onclick="speakText('${opt.de.replace(/'/g, "\\'")}')">
+                <strong style="color: #fff; font-size: 0.95rem;">"${opt.de}"</strong>
+                <span style="display: block; font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">➔ ${opt.vi}</span>
+              </div>
+              <button onclick="toggleSpeakingFavorite('${opt.de.replace(/'/g, "\\'")}', '${opt.vi.replace(/'/g, "\\'")}', this)" style="background: ${isFav ? 'rgba(251, 191, 36, 0.16)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${isFav ? 'rgba(251, 191, 36, 0.5)' : 'rgba(255,255,255,0.12)'}; color: ${isFav ? '#fbbf24' : '#94a3b8'}; border-radius: 10px; cursor: pointer; padding: 6px 8px; display: inline-flex; align-items: center; justify-content: center;" title="${isFav ? 'Đã lưu vào Sổ tay' : 'Lưu vào Sổ tay'}">
+                ${getNotebookIconSvg(isFav, 16)}
+              </button>
+            </div>
+          `;
+        });
+
+        box.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong style="color: #38bdf8; font-size: 0.95rem;">${sc.scenario}</strong>
+            <button class="deck-btn btn-glass-subtle" onclick="speakText('${sc.question.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 0.8rem;">
+              <i class="fa-solid fa-volume-high"></i> Nghe câu mẫu
+            </button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">
+            ${optionsHtml}
+          </div>
+        `;
+        container.appendChild(box);
+      });
+
+      // Bài tự nói Self-talk
+      const selfTalkQuotes = [
+        "Heute habe ich um sieben Uhr angefangen. Zuerst habe ich die Zimmer gereinigt. Danach habe ich die Treppe geputzt. Anschließend habe ich noch die Aufgaben erledigt. Es gab ziemlich viel zu tun, deshalb war ich etwas müde.",
+        "Morgen habe ich Frühschicht. Ich muss pünktlich aufstehen und das Frühstück für die Gäste vorbereiten. Wenn etwas unklar ist, frage ich direkt meinen Kollegen.",
+        "Ich habe heute viel Neues auf Deutsch gelernt. Schritt für Schritt wird meine Aussprache besser und ich verstehe die Gespräche im Team viel leichter."
+      ];
+      const randomSelfTalk = selfTalkQuotes[Math.floor(Math.random() * selfTalkQuotes.length)];
+      const selfTalkBox = document.createElement('div');
+      selfTalkBox.style.cssText = "background: rgba(0,0,0,0.3); padding: 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);";
+      selfTalkBox.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <strong style="color: #34d399; font-size: 0.95rem;"><i class="fa-solid fa-microphone"></i> Bài Tự Nói Hôm Nay (Self-Talk 5–10 Phút):</strong>
+          <button class="deck-btn btn-glass-subtle" onclick="speakText('${randomSelfTalk.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 0.8rem;">
+            <i class="fa-solid fa-volume-high"></i> Nghe giọng đọc
+          </button>
+        </div>
+        <p style="font-size: 0.95rem; line-height: 1.7; color: #f1f5f9; background: rgba(255,255,255,0.04); padding: 14px; border-radius: 12px;">
+          "${randomSelfTalk}"
+        </p>
+      `;
+      container.appendChild(selfTalkBox);
+    }
+
+    function toggleSpeakingFavorite(de, vi, btnElem) {
+      const added = toggleFavoriteItem({ de, vi, type: 'Câu giao tiếp', ex: '' });
+      btnElem.innerHTML = getNotebookIconSvg(added, 16);
+      btnElem.title = added ? 'Đã lưu vào Sổ tay' : 'Lưu vào Sổ tay';
+      btnElem.style.color = added ? '#fbbf24' : '#94a3b8';
+      btnElem.style.background = added ? 'rgba(251, 191, 36, 0.16)' : 'rgba(255,255,255,0.05)';
+      btnElem.style.borderColor = added ? 'rgba(251, 191, 36, 0.5)' : 'rgba(255,255,255,0.12)';
+      showAppToast(added ? `Đã lưu "${de}" vào Sổ tay` : `Đã xóa "${de}" khỏi Sổ tay`, added ? 'saved' : 'removed');
+    }
+
+    function refreshDailySpeakingScenarios() {
+      speakingDailyPool.sort(() => Math.random() - 0.5);
+      renderDailySpeakingScenarios();
+    }
+
+    // ==========================================
+    // 2. TTS: PHÁT ÂM TIẾNG ĐỨC CHUẨN
+    // ==========================================
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'de-DE';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ==========================================
+    // 3. SHADOWING DATA & LOGIC
+    // ==========================================
+    const shadowSnippets = [
+      "In Anbetracht der aktuellen Lage lässt sich feststellen, dass die Digitalisierung nicht nur Chancen bietet, sondern auch enorme Herausforderungen mit sich bringt.",
+      "Kannst du das bitte noch schnell erledigen? Wir müssen in zehn Minuten fertig sein.",
+      "Heute habe ich um sieben Uhr angefangen. Zuerst habe ich die Zimmer gereinigt, danach habe ich die Aufgaben erledigt."
+    ];
+    let shadowIdx = 0;
+    function playCurrentShadow() {
+      speakText(shadowSnippets[shadowIdx]);
+    }
+    function nextShadowSnippet() {
+      shadowIdx = (shadowIdx + 1) % shadowSnippets.length;
+      document.getElementById('shadowText').innerText = `"${shadowSnippets[shadowIdx]}"`;
+    }
+
+    // ==========================================
+    // 4. LIVE CLASSROOM SPEECH-TO-TEXT & TRANSLATION
+    // ==========================================
+    let isClassroomListening = false;
+    let recognition = null;
+    let lectureHistory = [];
+    const EXAM_KEYWORDS = ["prüfung", "test", "klausur", "aufgabe", "hausaufgabe", "abgabe", "termin", "wichtig", "beachten", "wiederholen", "noten", "vorbereitung"];
+
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Trình duyệt không hỗ trợ Web Speech API. Hãy dùng Microsoft Edge hoặc Google Chrome!");
+        return false;
+      }
+      recognition = new SpeechRecognition();
+      recognition.lang = 'de-DE';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      const liveBadge = document.getElementById('speechLiveBadge');
+      const interimBox = document.getElementById('interimSpeechDisplay');
+
+      recognition.onstart = function() {
+        isClassroomListening = true;
+        document.getElementById('micLed').style.background = '#10b981';
+        document.getElementById('micStatusText').innerText = 'Đang nghe giảng (de-DE)...';
+        document.getElementById('recBtnText').innerText = 'Tạm dừng nghe';
+        if (liveBadge) liveBadge.style.display = 'inline-flex';
+      };
+
+      recognition.onresult = function(event) {
+        let interimText = '';
+        let finalText = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalText += transcript;
+          } else {
+            interimText += transcript;
+          }
+        }
+
+        // Hiển thị trực tiếp câu giáo viên đang nói dở (interim real-time)
+        if (interimBox) {
+          if (interimText.trim()) {
+            interimBox.innerText = `Đang nghe: "${interimText}"...`;
+            interimBox.style.display = 'block';
+          } else {
+            interimBox.style.display = 'none';
+          }
+        }
+
+        // Khi câu nói đã hoàn chỉnh (isFinal): lưu và dịch tức thì
+        if (finalText.trim()) {
+          if (interimBox) interimBox.style.display = 'none';
+          appendAndTranslateLectureSentence(finalText.trim());
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.warn("Speech recognition error:", event.error);
+        if (event.error === 'not-allowed') {
+          alert("Vui lòng cấp quyền truy cập Microphone cho ứng dụng trong trình duyệt!");
+          isClassroomListening = false;
+        }
+      };
+
+      recognition.onend = function() {
+        if (isClassroomListening) {
+          // Tự động kích hoạt lại nhanh chóng (keep-alive) không để gián đoạn buổi học
+          setTimeout(() => {
+            if (isClassroomListening) {
+              try { recognition.start(); } catch(e) {}
+            }
+          }, 250);
+        } else {
+          if (liveBadge) liveBadge.style.display = 'none';
+          if (interimBox) interimBox.style.display = 'none';
+        }
+      };
+      return true;
+    }
+
+    function toggleClassroomListen() {
+      if (!recognition && !initSpeechRecognition()) return;
+      const liveBadge = document.getElementById('speechLiveBadge');
+      const interimBox = document.getElementById('interimSpeechDisplay');
+
+      if (!isClassroomListening) {
+        try {
+          recognition.start();
+        } catch(e) {
+          try { recognition.stop(); setTimeout(() => recognition.start(), 200); } catch(err) {}
+        }
+      } else {
+        isClassroomListening = false;
+        try { recognition.stop(); } catch(e) {}
+        document.getElementById('micLed').style.background = '#64748b';
+        document.getElementById('micStatusText').innerText = 'Đã tạm dừng';
+        document.getElementById('recBtnText').innerText = 'Bắt đầu lắng nghe bài giảng';
+        if (liveBadge) liveBadge.style.display = 'none';
+        if (interimBox) interimBox.style.display = 'none';
+      }
+    }
+
+    async function translateGermanToVietnamese(germanText) {
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=vi&dt=t&q=${encodeURIComponent(germanText)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data[0]) {
+          let vi = "";
+          data[0].forEach(seg => { if (seg && seg[0]) vi += seg[0]; });
+          return vi || "Không thể dịch.";
+        }
+        return "Không có bản dịch.";
+      } catch (err) {
+        return "Lỗi kết nối dịch.";
+      }
+    }
+
+    async function appendAndTranslateLectureSentence(deSentence) {
+      const articleBox = document.getElementById('vietnameseArticleBox');
+      const germanStream = document.getElementById('liveGermanStream');
+      const vietStream = document.getElementById('liveVietStream');
+
+      const emptyNotice = articleBox.querySelector('p');
+      if (emptyNotice) articleBox.innerHTML = '';
+      if (germanStream && germanStream.querySelector('p')) germanStream.innerHTML = '';
+      if (vietStream && vietStream.querySelector('p')) vietStream.innerHTML = '';
+
+      const timeStr = new Date().toLocaleTimeString();
+      const viTranslation = await translateGermanToVietnamese(deSentence);
+      lectureHistory.push({ time: timeStr, de: deSentence, vi: viTranslation });
+
+      // 1. Cập nhật Ô Tiếng Đức (Giáo viên nói)
+      if (germanStream) {
+        const pDe = document.createElement('div');
+        pDe.style.cssText = "margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #38bdf8;";
+        pDe.innerHTML = `<span style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;"><i class="fa-regular fa-clock"></i> ${timeStr}</span><span style="color:#fff; font-weight:500;">${deSentence}</span>`;
+        germanStream.appendChild(pDe);
+        germanStream.scrollTop = germanStream.scrollHeight;
+      }
+
+      // 2. Cập nhật Ô Tiếng Việt (Dịch tự động song song)
+      if (vietStream) {
+        const pVi = document.createElement('div');
+        pVi.style.cssText = "margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #34d399;";
+        pVi.innerHTML = `<span style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;"><i class="fa-regular fa-clock"></i> ${timeStr}</span><span style="color:#a7f3d0; font-weight:500;">${viTranslation}</span>`;
+        vietStream.appendChild(pVi);
+        vietStream.scrollTop = vietStream.scrollHeight;
+      }
+
+      // 3. Cập nhật Bản dịch tiếng Việt (Tổng Hợp Liền Mạch Dạng Văn Bản)
+      const lower = deSentence.toLowerCase();
+      const isExam = EXAM_KEYWORDS.some(kw => lower.includes(kw));
+
+      const div = document.createElement('div');
+      div.style.cssText = "margin-bottom: 16px; line-height: 1.85; text-align: justify;";
+
+      if (isExam) {
+        div.innerHTML = `
+          <div style="font-size: 0.8rem; font-weight: 800; color: #f87171; margin-bottom: 4px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> [LƯU Ý GIÁO VIÊN DẶN THI CỬ / BÀI TẬP]:
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.16); padding: 8px 12px; border-radius: 10px; border-left: 3px solid #ef4444; color: #fecdd3;">
+            “${viTranslation}”
+          </div>
+        `;
+      } else {
+        div.innerHTML = `“${viTranslation}”`;
+      }
+
+      articleBox.appendChild(div);
+      articleBox.scrollTop = articleBox.scrollHeight;
+    }
+
+    function copyPureVietnameseText() {
+      if (!lectureHistory.length) { alert("Chưa có nội dung dịch nào!"); return; }
+      let fullText = "1. Bản dịch tiếng Việt\nGiáo viên:\n\n";
+      lectureHistory.forEach(item => { fullText += `“${item.vi}”\n\n`; });
+      navigator.clipboard.writeText(fullText);
+      alert("Đã sao chép toàn bộ văn bản tiếng Việt!");
+    }
+
+    function clearLiveTransHistory() {
+      document.getElementById('vietnameseArticleBox').innerHTML = `<p style="color: #64748b; font-style: italic;">Đã xóa bảng dịch. Hãy bật mic để nghe giảng...</p>`;
+      const germanStream = document.getElementById('liveGermanStream');
+      const vietStream = document.getElementById('liveVietStream');
+      if (germanStream) germanStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Nhấn nút "Bắt đầu lắng nghe bài giảng" và để thiết bị gần giáo viên...</p>`;
+      if (vietStream) vietStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Bản dịch tiếng Việt tương ứng sẽ tự động cập nhật ngay khi giáo viên dứt từng câu giảng.</p>`;
+      lectureHistory = [];
+    }
+
+    function exportLectureNotes() {
+      if (!lectureHistory.length) { alert("Chưa có ghi chép nào!"); return; }
+      let content = "=== GHI CHÉP BÀI GIẢNG TIẾNG ĐỨC ===\n\n";
+      lectureHistory.forEach((it, i) => { content += `[${it.time}] Câu ${i + 1}:\nDE: ${it.de}\nVI: ${it.vi}\n\n`; });
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `BaiGiang_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click();
+    }
+
+    let lastLectureSummaryMarkdown = '';
+
+    function copyLectureSummaryMarkdown() {
+      if (!lastLectureSummaryMarkdown) return;
+      navigator.clipboard.writeText(lastLectureSummaryMarkdown);
+      showAppToast('Đã sao chép bản tóm tắt Markdown vào bộ nhớ tạm', 'saved');
+    }
+
+    function saveSummaryTermToNotebook(term, meaningVi, note, btnEl) {
+      const added = toggleFavoriteItem({
+        de: term,
+        vi: meaningVi,
+        type: 'Thuật ngữ bài giảng',
+        ex: note || ''
+      });
+      if (btnEl) {
+        btnEl.innerHTML = getNotebookIconSvg(added, 15);
+        btnEl.title = added ? 'Đã lưu vào Sổ tay' : 'Lưu vào Sổ tay';
+        btnEl.style.color = added ? '#fbbf24' : '#94a3b8';
+        btnEl.style.background = added ? 'rgba(251, 191, 36, 0.18)' : 'rgba(255,255,255,0.06)';
+        btnEl.style.borderColor = added ? 'rgba(251, 191, 36, 0.55)' : 'rgba(255,255,255,0.15)';
+      }
+      showAppToast(added ? `Đã lưu "${term}" vào Sổ tay` : `Đã xóa "${term}" khỏi Sổ tay`, added ? 'saved' : 'removed');
+    }
+
+    async function generateLectureSummary() {
+      if (!lectureHistory.length) {
+        showAppToast('Chưa có nội dung bài giảng nào để tóm tắt!', 'removed');
+        return;
+      }
+      if (isClassroomListening) toggleClassroomListen();
+
+      const summaryBox = document.getElementById('lectureSummaryBox');
+      const loadingEl = document.getElementById('summaryLoadingState');
+      const errorEl = document.getElementById('summaryErrorState');
+      const sectionsEl = document.getElementById('summarySectionsContainer');
+      const examAlertSection = document.getElementById('examAlertSection');
+      const examAlertList = document.getElementById('examAlertList');
+      const mainPointsList = document.getElementById('summaryMainPoints');
+      const importantInfoList = document.getElementById('summaryImportantInfo');
+      const wortschatzBody = document.getElementById('summaryWortschatzBody');
+      const copyMdBtn = document.getElementById('btnCopySummaryMd');
+
+      summaryBox.style.display = 'block';
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      sectionsEl.style.display = 'none';
+      examAlertSection.style.display = 'none';
+      if (copyMdBtn) copyMdBtn.style.display = 'none';
+      examAlertList.innerHTML = '';
+      mainPointsList.innerHTML = '';
+      if (importantInfoList) importantInfoList.innerHTML = '';
+      if (wortschatzBody) wortschatzBody.innerHTML = '';
+      summaryBox.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const res = await fetch('/api/lecture-summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcriptLines: lectureHistory })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || `Lỗi máy chủ (${res.status})`);
+        }
+
+        const alerts = Array.isArray(data.examAlerts) ? data.examAlerts : [];
+        if (alerts.length > 0) {
+          alerts.forEach((a) => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '6px';
+            li.innerHTML = `<span style="color:#fca5a5; font-weight:700;">• Lưu ý:</span> `;
+            li.appendChild(document.createTextNode(a));
+            examAlertList.appendChild(li);
+          });
+          examAlertSection.style.display = 'block';
+        }
+
+        const mainPoints = Array.isArray(data.zusammenfassung) ? data.zusammenfassung : [];
+        if (mainPoints.length) {
+          mainPoints.forEach((pt) => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '6px';
+            li.textContent = pt;
+            mainPointsList.appendChild(li);
+          });
+        } else {
+          mainPointsList.innerHTML = '<li style="color:#94a3b8;">[Không rõ / Cần kiểm tra lại]</li>';
+        }
+
+        const importantList = Array.isArray(data.wichtigeInformationen) ? data.wichtigeInformationen : [];
+        if (importantInfoList) {
+          if (importantList.length) {
+            importantList.forEach((item) => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '8px';
+              const isSup = String(item.sourceTag || '').toLowerCase().includes('bổ sung');
+              const badge = document.createElement('span');
+              badge.textContent = isSup ? 'Bổ sung' : 'Bài giảng';
+              badge.style.cssText = isSup
+                ? 'display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:8px;background:rgba(168,85,247,0.22);color:#d8b4fe;border:1px solid rgba(168,85,247,0.4);'
+                : 'display:inline-block;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:8px;background:rgba(251,191,36,0.18);color:#fde68a;border:1px solid rgba(251,191,36,0.4);';
+              li.appendChild(badge);
+              li.appendChild(document.createTextNode(item.point || ''));
+              importantInfoList.appendChild(li);
+            });
+          } else {
+            importantInfoList.innerHTML = '<li style="color:#94a3b8;">Không ghi nhận nguyên tắc hoặc số liệu đặc biệt trong đoạn này.</li>';
+          }
+        }
+
+        const terms = Array.isArray(data.wortschatz) ? data.wortschatz : [];
+        if (wortschatzBody) {
+          if (terms.length) {
+            terms.forEach((w) => {
+              const tr = document.createElement('tr');
+              tr.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+              const termStr = w.term || '';
+              const meaningStr = w.meaningVi || '';
+              const noteStr = w.note || '';
+              const saved = isFavorited(termStr);
+
+              const tdTerm = document.createElement('td');
+              tdTerm.style.cssText = 'padding: 10px 8px; color: #fff; font-weight: 700; cursor: pointer;';
+              tdTerm.title = 'Bấm để nghe phát âm';
+              tdTerm.textContent = termStr;
+              tdTerm.onclick = () => speakText(termStr);
+
+              const tdMeaning = document.createElement('td');
+              tdMeaning.style.cssText = 'padding: 10px 8px; color: #34d399; font-weight: 600;';
+              tdMeaning.textContent = meaningStr;
+
+              const tdNote = document.createElement('td');
+              tdNote.style.cssText = 'padding: 10px 8px; color: #cbd5e1;';
+              tdNote.textContent = noteStr;
+
+              const tdAction = document.createElement('td');
+              tdAction.style.cssText = 'padding: 10px 8px; text-align: right;';
+              const btn = document.createElement('button');
+              btn.innerHTML = getNotebookIconSvg(saved, 15);
+              btn.title = saved ? 'Đã lưu vào Sổ tay' : 'Lưu vào Sổ tay';
+              btn.style.cssText = `display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;cursor:pointer;background:${saved ? 'rgba(251, 191, 36, 0.18)' : 'rgba(255,255,255,0.06)'};border:1px solid ${saved ? 'rgba(251, 191, 36, 0.55)' : 'rgba(255,255,255,0.15)'};color:${saved ? '#fbbf24' : '#94a3b8'};`;
+              btn.onclick = () => saveSummaryTermToNotebook(termStr, meaningStr, noteStr, btn);
+              tdAction.appendChild(btn);
+
+              tr.appendChild(tdTerm);
+              tr.appendChild(tdMeaning);
+              tr.appendChild(tdNote);
+              tr.appendChild(tdAction);
+              wortschatzBody.appendChild(tr);
+            });
+          } else {
+            wortschatzBody.innerHTML = '<tr><td colspan="4" style="padding: 12px 8px; color: #94a3b8; font-style: italic;">Không có từ khóa hoặc thuật ngữ chuyên ngành nổi bật.</td></tr>';
+          }
+        }
+
+        lastLectureSummaryMarkdown = data.markdown || '';
+        if (copyMdBtn && lastLectureSummaryMarkdown) {
+          copyMdBtn.style.display = 'inline-flex';
+        }
+        sectionsEl.style.display = 'flex';
+      } catch (err) {
+        errorEl.textContent = `Không thể tạo bản tóm tắt AI: ${err.message || 'Lỗi kết nối máy chủ.'}`;
+        errorEl.style.display = 'block';
+      } finally {
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // Mô phỏng câu nói
+    const sampleSentences = [
+      "Guten Morgen zusammen! Heute besprechen wir die Aufgaben für die B2-Prüfung.",
+      "Kannst du bitte die Zimmer im zweiten Stock noch schnell fertig machen?",
+      "Ein wichtiger Hinweis: Bitte wiederholen Sie das Thema Konjunktiv II bis nächste Woche für den Test!"
+    ];
+    let sIdx = 0;
+    function simulateTeacherLecture() {
+      const s = sampleSentences[sIdx];
+      sIdx = (sIdx + 1) % sampleSentences.length;
+      speakText(s);
+      appendAndTranslateLectureSentence(s);
+    }
+
+    // ==========================================
+    // 5. RADIO PLAYER ENGINE
+    // ==========================================
+    let currentRadioStreamUrl = 'https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3';
+    let isRadioPlaying = false;
+
+    function toggleRadioPlay() {
+      const audio = document.getElementById('liveRadioAudio');
+      const icon = document.getElementById('radioPlayIcon');
+      const text = document.getElementById('radioBtnText');
+      const statusText = document.getElementById('radioStatusText');
+
+      if (!isRadioPlaying) {
+        audio.src = currentRadioStreamUrl;
+        audio.play().then(() => {
+          isRadioPlaying = true;
+          icon.className = "fa-solid fa-pause";
+          text.innerText = "Tạm dừng";
+          statusText.innerText = "Trực tiếp 24/7";
+        }).catch(e => { statusText.innerText = "Lỗi kết nối"; });
+      } else {
+        audio.pause();
+        isRadioPlaying = false;
+        icon.className = "fa-solid fa-play";
+        text.innerText = "Bật Đài";
+        statusText.innerText = "Đã dừng";
+      }
+    }
+
+    function switchRadioStation(url, title, cardElem) {
+      document.querySelectorAll('#tab-listening .radio-station-card').forEach(c => {
+        c.style.background = 'rgba(255,255,255,0.04)';
+        c.style.borderColor = 'rgba(255,255,255,0.1)';
+      });
+      cardElem.style.background = 'rgba(255,255,255,0.08)';
+      cardElem.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+
+      currentRadioStreamUrl = url;
+      document.getElementById('currentStationTitle').innerText = title;
+      const audio = document.getElementById('liveRadioAudio');
+      audio.src = url;
+      if (isRadioPlaying) audio.play();
+    }
+
+    function setRadioVolume(val) {
+      document.getElementById('liveRadioAudio').volume = parseFloat(val);
+    }
+
+    // ==========================================
+    // 6. NEWS & MANGA INTERACTIVE ENGINE
+    // ==========================================
+    const newsArticles = [
+      {
+        titleDe: "Neue Regeln für Arbeitszeiten in Deutschland",
+        titleVi: "Quy định mới về thời gian làm việc tại Đức",
+        sentences: [
+          { de: "In Deutschland gibt es neue Diskussionen über das Arbeitszeitgesetz.", vi: "Tại Đức đang có những cuộc thảo luận mới về luật thời gian làm việc." },
+          { de: "Viele Unternehmen fordern mehr Flexibilität bei den täglichen Arbeitsstunden.", vi: "Nhiều doanh nghiệp yêu cầu sự linh hoạt hơn đối với số giờ làm việc hàng ngày." },
+          { de: "Die Gewerkschaften betonen jedoch, dass der Gesundheitsschutz der Mitarbeiter an erster Stelle stehen muss.", vi: "Tuy nhiên, các công đoàn nhấn mạnh rằng việc bảo vệ sức khỏe của nhân viên phải được đặt lên hàng đầu." },
+          { de: "Besonders im Bereich der Pflege, der Gastronomie und der Logistik sind die Belastungen oft sehr hoch.", vi: "Đặc biệt trong lĩnh vực điều dưỡng, nhà hàng và hậu cần, áp lực công việc thường rất cao." },
+          { de: "Eine elektronische Erfassung der Arbeitszeit ist nun für alle Arbeitgeber verpflichtend vorgesehen.", vi: "Việc chấm công điện tử giờ đây được quy định là bắt buộc đối với tất cả người sử dụng lao động." }
+        ]
+      },
+      {
+        titleDe: "Fachkräftemangel in der Gastronomie und Hotellerie",
+        titleVi: "Tình trạng thiếu nhân lực ngành nhà hàng - khách sạn",
+        sentences: [
+          { de: "Viele Hotels und Restaurants in Deutschland suchen dringend nach qualifiziertem Personal.", vi: "Nhiều khách sạn và nhà hàng ở Đức đang tìm kiếm nhân viên có chuyên môn một cách cấp thiết." },
+          { de: "Wegen des Mangels an Mitarbeitern müssen einige Betriebe ihre Öffnungszeiten reduzieren oder zusätzliche Ruhetage einführen.", vi: "Vì thiếu nhân viên, một số cơ sở kinh doanh phải giảm giờ mở cửa hoặc thêm ngày nghỉ." },
+          { de: "Ausländische Fachkräfte erhalten durch das neue Fachkräfteeinwanderungsgesetz bessere Chancen auf einen Arbeitsplatz.", vi: "Lao động lành nghề nước ngoài nhận được cơ hội việc làm tốt hơn thông qua luật nhập cư lao động mới." },
+          { de: "Gute Sprachkenntnisse auf dem Niveau B1 oder B2 sind dabei ein entscheidender Erfolgsfaktor.", vi: "Kỹ năng tiếng Đức tốt ở trình độ B1 hoặc B2 là yếu tố thành công quyết định." }
+        ]
+      },
+      {
+        titleDe: "Künstliche Intelligenz verändert den Alltag der Menschen",
+        titleVi: "Trí tuệ nhân tạo đang thay đổi cuộc sống hàng ngày ra sao",
+        sentences: [
+          { de: "Künstliche Intelligenz wird in immer mehr Lebensbereichen eingesetzt.", vi: "Trí tuệ nhân tạo đang được ứng dụng trong ngày càng nhiều lĩnh vực của đời sống." },
+          { de: "Beim Sprachenlernen können intelligente Sprachmodelle als geduldige Gesprächspartner dienen.", vi: "Trong việc học ngoại ngữ, các mô hình ngôn ngữ thông minh có thể đóng vai trò như người bạn trò chuyện kiên nhẫn." },
+          { de: "Experten empfehlen, moderne Technologien gezielt zu nutzen, um die eigene Produktivität zu steigern.", vi: "Các chuyên gia khuyến nghị tận dụng công nghệ hiện đại có chủ đích để nâng cao năng suất cá nhân." }
+        ]
+      }
+    ];
+
+    let currentNewsIdx = 0;
+    let showNewsTranslation = true;
+
+    function loadNewsArticle(idx, cardElem) {
+      currentNewsIdx = idx;
+      if (cardElem) {
+        document.querySelectorAll('.news-selector-card').forEach(c => {
+          c.style.background = 'rgba(255,255,255,0.04)';
+          c.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+        cardElem.style.background = 'rgba(255,255,255,0.08)';
+        cardElem.style.borderColor = 'rgba(236, 72, 153, 0.5)';
+      }
+
+      const art = newsArticles[idx];
+      document.getElementById('newsArticleTitleDe').innerText = art.titleDe;
+      document.getElementById('newsArticleTitleVi').innerText = art.titleVi;
+
+      const container = document.getElementById('newsArticleContent');
+      container.innerHTML = '';
+
+      art.sentences.forEach(item => {
+        const p = document.createElement('div');
+        p.className = 'news-sentence-block';
+        p.style.cssText = "margin-bottom: 14px; padding: 10px 14px; background: rgba(255,255,255,0.03); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;";
+        p.onmouseover = () => { p.style.background = 'rgba(255,255,255,0.08)'; };
+        p.onmouseout = () => { p.style.background = 'rgba(255,255,255,0.03)'; };
+        p.onclick = () => { speakText(item.de); };
+
+        p.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <span style="font-weight: 500; color: #fff;">${item.de}</span>
+            <i class="fa-solid fa-volume-high" style="color: #ec4899; font-size: 0.85rem; margin-top: 5px; flex-shrink: 0;" title="Bấm nghe đọc"></i>
+          </div>
+          <div class="sentence-vi-trans" style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px; display: ${showNewsTranslation ? 'block' : 'none'};">
+            ${item.vi}
+          </div>
+        `;
+        container.appendChild(p);
+      });
+    }
+
+    function toggleNewsSentenceTranslation() {
+      showNewsTranslation = !showNewsTranslation;
+      document.querySelectorAll('.sentence-vi-trans').forEach(el => {
+        el.style.display = showNewsTranslation ? 'block' : 'none';
+      });
+    }
+
+    function readAloudCurrentNews() {
+      const art = newsArticles[currentNewsIdx];
+      const fullDe = art.sentences.map(s => s.de).join(' ');
+      speakText(fullDe);
+    }
+
+    // MANGA STORIES
+    const mangaStories = [
+      {
+        title: "Ein ganz normaler Schultag (Một ngày đi học)",
+        panels: [
+          {
+            char: "Eren",
+            avatar: "🎒",
+            color: "#38bdf8",
+            de: "Guten Morgen, Armin! Hast du die Hausaufgaben für heute schon fertig?",
+            vi: "Chào buổi sáng, Armin! Cậu đã làm xong bài tập về nhà cho hôm nay chưa?"
+          },
+          {
+            char: "Armin",
+            avatar: "📖",
+            color: "#fbbf24",
+            de: "Fast! Ich muss nur noch den Text über die B2-Grammatik wiederholen.",
+            vi: "Gần xong rồi! Tớ chỉ còn phải ôn lại bài đọc về ngữ pháp B2 thôi."
+          },
+          {
+            char: "Mikasa",
+            avatar: "🧣",
+            color: "#ec4899",
+            de: "Beeilt euch bitte! Der Lehrer kommt gleich ins Klassenzimmer.",
+            vi: "Nhanh lên nào hai cậu! Thầy giáo sắp bước vào lớp rồi đấy."
+          },
+          {
+            char: "Eren",
+            avatar: "⚡",
+            color: "#10b981",
+            de: "Keine Sorge, wir schaffen das rechtzeitig!",
+            vi: "Đừng lo, bọn mình làm kịp giờ mà!"
+          }
+        ]
+      },
+      {
+        title: "Die Prüfung des Abenteurers (Kỳ thi phiêu lưu)",
+        panels: [
+          {
+            char: "Guild Master",
+            avatar: "⚔️",
+            color: "#f59e0b",
+            de: "Willkommen in der Gilde. Seid ihr bereit für eure erste Mission?",
+            vi: "Chào mừng đến với bang hội. Các bạn đã sẵn sàng cho nhiệm vụ đầu tiên chưa?"
+          },
+          {
+            char: "Ryu",
+            avatar: "🔥",
+            color: "#ef4444",
+            de: "Natürlich! Wir haben lange dafür trainiert und fürchten keine Gefahr.",
+            vi: "Đương nhiên rồi! Chúng tôi đã luyện tập rất lâu và không sợ bất kỳ hiểm nguy nào."
+          },
+          {
+            char: "Guild Master",
+            avatar: "📜",
+            color: "#38bdf8",
+            de: "Sehr gut. Eure Aufgabe ist es, den alten Turm im Wald zu untersuchen.",
+            vi: "Rất tốt. Nhiệm vụ của các bạn là kiểm tra tòa tháp cổ trong rừng."
+          }
+        ]
+      },
+      {
+        title: "Das Geheimnis des alten Cafés (Bí ẩn quán cà phê)",
+        panels: [
+          {
+            char: "Kellnerin",
+            avatar: "☕",
+            color: "#c084fc",
+            de: "Guten Tag! Was darf ich Ihnen heute Schönes bringen?",
+            vi: "Xin chào! Hôm nay tôi có thể mang gì ngon miệng cho quý khách ạ?"
+          },
+          {
+            char: "Gast",
+            avatar: "🎩",
+            color: "#38bdf8",
+            de: "Ich hätte gerne einen großen Cappuccino und ein Stück Apfelkuchen, bitte.",
+            vi: "Tôi muốn gọi một tách Cappuccino lớn và một miếng bánh táo, làm ơn."
+          },
+          {
+            char: "Kellnerin",
+            avatar: "✨",
+            color: "#10b981",
+            de: "Sehr gerne! Kommt sofort zu Ihrem Tisch.",
+            vi: "Dạ vâng ạ! Sẽ có ngay tại bàn của quý khách."
+          }
+        ]
+      }
+    ];
+
+    function loadMangaStory(idx, cardElem) {
+      if (cardElem) {
+        document.querySelectorAll('.manga-selector-card').forEach(c => {
+          c.style.background = 'rgba(255,255,255,0.04)';
+          c.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+        cardElem.style.background = 'rgba(255,255,255,0.08)';
+        cardElem.style.borderColor = 'rgba(236, 72, 153, 0.5)';
+      }
+
+      const st = mangaStories[idx];
+      document.getElementById('mangaStoryTitle').innerText = st.title;
+      const container = document.getElementById('mangaPanelsContainer');
+      container.innerHTML = '';
+
+      st.panels.forEach(p => {
+        const item = document.createElement('div');
+        item.style.cssText = "display: flex; gap: 14px; background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); align-items: flex-start; cursor: pointer; transition: transform 0.2s;";
+        item.onmouseover = () => { item.style.transform = 'translateY(-2px)'; item.style.borderColor = 'rgba(236, 72, 153, 0.35)'; };
+        item.onmouseout = () => { item.style.transform = 'translateY(0)'; item.style.borderColor = 'rgba(255,255,255,0.08)'; };
+        item.onclick = () => { speakText(p.de); };
+
+        item.innerHTML = `
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.08); display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15);">
+            ${p.avatar}
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="color: ${p.color}; font-size: 0.9rem;">${p.char}</strong>
+              <span style="font-size: 0.72rem; color: #94a3b8;"><i class="fa-solid fa-volume-high"></i> Nhấn để nghe</span>
+            </div>
+            <div style="font-size: 1.05rem; font-weight: 600; color: #fff; line-height: 1.5; margin-bottom: 4px;">
+              "${p.de}"
+            </div>
+            <div style="font-size: 0.88rem; color: #a7f3d0; line-height: 1.4;">
+              ➔ ${p.vi}
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function switchMediaMode(mode) {
+      const btnNews = document.getElementById('btnModeNews');
+      const btnManga = document.getElementById('btnModeManga');
+      const secNews = document.getElementById('sectionNewsView');
+      const secManga = document.getElementById('sectionMangaView');
+
+      if (mode === 'news') {
+        btnNews.className = 'deck-btn btn-primary-ios';
+        btnNews.style.background = 'linear-gradient(135deg, #ec4899, #db2777)';
+        btnManga.className = 'deck-btn btn-glass-subtle';
+        btnManga.style.background = '';
+        secNews.style.display = 'block';
+        secManga.style.display = 'none';
+        loadNewsArticle(currentNewsIdx, null);
+      } else {
+        btnManga.className = 'deck-btn btn-primary-ios';
+        btnManga.style.background = 'linear-gradient(135deg, #ec4899, #db2777)';
+        btnNews.className = 'deck-btn btn-glass-subtle';
+        btnNews.style.background = '';
+        secNews.style.display = 'none';
+        secManga.style.display = 'block';
+        loadMangaStory(0, null);
+      }
+    }
+
+    // ==========================================
+    // 7. UI NAVIGATION & DRAWER
+    // ==========================================
+    function toggleDesktopSidebar() {
+      document.querySelector('.app-viewport').classList.toggle('sidebar-collapsed');
+    }
+    function openMobileDrawer() {
+      document.getElementById('appSidebar').classList.add('open');
+      document.getElementById('mobileOverlay').classList.add('active');
+    }
+    function closeMobileDrawer() {
+      document.getElementById('appSidebar').classList.remove('open');
+      document.getElementById('mobileOverlay').classList.remove('active');
+    }
+
+    function switchTab(tabId, clickedEl) {
+      document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+
+      const titleMap = {
+        'live-trans': { title: 'Mitschreiben & Übersetzen im Unterricht', desc: 'Mikrofon aktivieren, um die deutsche Erklärung der Lehrkraft automatisch aufzunehmen und ins Vietnamesische zu übersetzen.' },
+        'listening': { title: 'Hörverstehen (3-Schritte-Methode)', desc: '1. Ohne Untertitel -> 2. Mit deutschem Skript -> 3. Ohne Text fließend verstehen (inkl. Deutsche Radiosender).' },
+        'shadowing': { title: 'Shadowing Studio (Aussprache & Intonation)', desc: 'Muttersprachliche Sätze in 20-40 Sekunden synchron nachsprechen, um Sprachmelodie und Akzent zu perfektionieren.' },
+        'reading': { title: 'Leseverstehen & Đọc Báo Tiếng Đức Trực Tiếp (Reader View)', desc: 'Đọc tin tức mới nhất từ Tagesschau, DW, Nachrichtenleicht ngay trong ứng dụng • Bấm hoặc bôi đen từ bất kỳ để tra từ & lưu vào Sổ tay.' },
+        'vocab': { title: 'Kollokationen & Feste Nomen-Verb-Verbindungen', desc: 'Wortverbindungen im authentischen Arbeits- und Alltagskontext cho B1/B2 và toàn bộ 5,243 từ vựng A1-C1.' },
+        'routine': { title: 'Tagesplan (60 Minuten Intensiv-Lernen)', desc: 'Wissenschaftlich optimierte Zeitverteilung auf alle Kernkompetenzen für nachhaltigen Fortschritt.' },
+        'dictionary': { title: 'Wörterbuch & KI-Kontextsuche', desc: 'Wortschatz mit Artikeln, Pluralformen, Beispielsätzen und unbegrenzter KI-Erklärung durchsuchen.' },
+        'favorites': { title: 'Sổ tay Từ vựng & Cụm từ cá nhân', desc: 'Toàn bộ từ vựng, cụm từ và câu ngữ cảnh bạn đã lưu từ Kho 5,243 từ vựng và khi đọc báo tiếng Đức.' }
+      };
+
+      if (titleMap[tabId]) {
+        document.getElementById('view-title').innerText = titleMap[tabId].title;
+        document.getElementById('view-desc').innerText = titleMap[tabId].desc;
+      }
+      const modeSwitcher = document.getElementById('vocabViewModeSwitcher');
+      if (modeSwitcher) {
+        modeSwitcher.style.display = tabId === 'vocab' ? 'inline-flex' : 'none';
+      }
+      if (tabId === 'reading' && typeof window.initLiveNewsReader === 'function') {
+        window.initLiveNewsReader();
+      }
+      if (tabId === 'news-manga') {
+        loadNewsArticle(currentNewsIdx, null);
+      }
+      if (tabId === 'favorites') {
+        renderFavoritesList();
+      }
+      
+      if (clickedEl && clickedEl.classList) {
+        clickedEl.classList.add('active');
+      } else {
+        // Tự động tìm nav-item tương ứng tabId để thêm class active
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+          if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${tabId}'`)) {
+            item.classList.add('active');
+          }
+        });
+      }
+      closeMobileDrawer();
+    }
+
+    // ==========================================
+    // 8. TỪ ĐIỂN HYBRID & WIKTIONARY & AI ENGINE
+    // ==========================================
+    let offlineVocabData = [];
+    fetch('./vocab-b1-b2.json').then(r => r.json()).then(data => {
+      offlineVocabData = data;
+      // Nối toàn bộ kho từ vựng B1/B2 vào danh sách Flashcard để bạn học liên tục không bị lặp!
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach(item => {
+          collocationList.push({
+            topic: item.topic || "Từ vựng Goethe B1/B2",
+            de: (item.art ? item.art + " " : "") + item.word,
+            vi: item.vi,
+            ex: item.sentence || ""
+          });
+        });
+        // Cập nhật lại số lượng hiển thị trên thẻ
+        renderCurrentCollocCard();
+      }
+    }).catch(() => {});
+
+    let currentDictWordObj = null;
+
+    async function searchDictionaryWord() {
+      const q = document.getElementById('dictSearchInput').value.trim();
+      if (!q) { alert("Vui lòng nhập từ tiếng Đức hoặc tiếng Việt cần tra!"); return; }
+
+      const lower = q.toLowerCase();
+
+      // 1. Tìm trong kho B1/B2 offline trước (hỗ trợ cả tiếng Đức & tiếng Việt)
+      const localMatch = offlineVocabData.find(item => 
+        (item.word || '').toLowerCase() === lower || 
+        (item.art && (item.art + " " + item.word).toLowerCase() === lower) ||
+        (item.vi && item.vi.toLowerCase().includes(lower))
+      );
+
+      if (localMatch) {
+        displayDictResult({
+          art: localMatch.art || '',
+          word: localMatch.word,
+          plural: localMatch.plural || '',
+          phonetic: localMatch.phonetic || '',
+          vi: localMatch.vi,
+          level: localMatch.level || 'B1/B2',
+          topic: localMatch.topic || 'Từ vựng trọng tâm',
+          sentenceDe: localMatch.sentence || '',
+          sentenceVi: localMatch.sentenceVi || ''
+        });
+        return;
+      }
+
+      // 2. Tìm trong kho 5,243 từ allHubWords (hỗ trợ cả tiếng Đức & tiếng Việt)
+      if (typeof allHubWords !== 'undefined' && allHubWords.length > 0) {
+        const hubMatch = allHubWords.find(item => {
+          const matchDe = (item.de && item.de.toLowerCase() === lower) || (item.word && item.word.toLowerCase() === lower);
+          const cachedVi = (typeof VI_TRANSLATION_CACHE !== 'undefined' && (VI_TRANSLATION_CACHE[`de_${item.word || item.de}`] || VI_TRANSLATION_CACHE[`en_${item.en}`])) || '';
+          const matchVi = cachedVi && cachedVi.toLowerCase().includes(lower);
+          return matchDe || matchVi;
+        });
+
+        if (hubMatch) {
+          const meaningKey = `de_${hubMatch.word || hubMatch.de}`;
+          const fallbackKey = `en_${hubMatch.en}`;
+          const viMeaning = (typeof VI_TRANSLATION_CACHE !== 'undefined' && (VI_TRANSLATION_CACHE[meaningKey] || VI_TRANSLATION_CACHE[fallbackKey])) || hubMatch.en || '';
+          
+          const exKey = `de_${hubMatch.example}`;
+          const viEx = (typeof VI_TRANSLATION_CACHE !== 'undefined' && VI_TRANSLATION_CACHE[exKey]) || hubMatch.exampleEn || '';
+
+          displayDictResult({
+            art: hubMatch.art || '',
+            word: hubMatch.word || hubMatch.de,
+            plural: '',
+            phonetic: `/${hubMatch.level || 'B1/B2'}/`,
+            vi: viMeaning,
+            level: hubMatch.level || 'B1/B2',
+            topic: hubMatch.catVi || 'Tổng hợp',
+            sentenceDe: hubMatch.example || `Ich verwende das Wort "${hubMatch.word || hubMatch.de}" oft.`,
+            sentenceVi: viEx || `Tôi thường sử dụng từ này trong thực tế.`
+          });
+          return;
+        }
+      }
+
+      // 3. Tra cứu trực tuyến 2 chiều thông minh qua Google GTX & AI
+      const btn = event && event.currentTarget ? event.currentTarget : null;
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tra...`;
+
+      try {
+        // Kiểm tra xem từ nhập vào là tiếng Việt hay tiếng Đức
+        // Nếu có dấu tiếng Việt hoặc từ điển tiếng Việt: dịch vi -> de; ngược lại: de -> vi
+        const isVietnamese = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(q);
+        const sl = isVietnamese ? 'vi' : 'de';
+        const tl = isVietnamese ? 'de' : 'vi';
+
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(q)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        let translatedText = "";
+        if (data && data[0]) {
+          data[0].forEach(seg => { if (seg && seg[0]) translatedText += seg[0]; });
+        }
+
+        const deWord = isVietnamese ? translatedText : q;
+        const viMeaning = isVietnamese ? q : translatedText;
+
+        const exampleDe = `Ich habe das Wort "${deWord}" im alltäglichen Gespräch gehört.`;
+        const exampleVi = await translateGermanToVietnamese(exampleDe);
+
+        displayDictResult({
+          art: '',
+          word: deWord,
+          plural: '',
+          phonetic: isVietnamese ? '/Tra từ Tiếng Việt ➔ Tiếng Đức/' : '/Wiktionary API/',
+          vi: viMeaning,
+          level: 'Tra cứu mở rộng',
+          topic: isVietnamese ? 'Dịch Việt ➔ Đức' : 'Dịch Đức ➔ Việt',
+          sentenceDe: exampleDe,
+          sentenceVi: exampleVi
+        });
+      } catch (err) {
+        alert("Lỗi kết nối tra từ điển: " + err.message);
+      } finally {
+        const traCuuBtn = document.querySelector('#tab-dictionary button.btn-primary-ios');
+        if (traCuuBtn) traCuuBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> Tra Cứu`;
+      }
+    }
+        function quickDictLookup(word) {
+      document.getElementById('dictSearchInput').value = word;
+      searchDictionaryWord();
+    }
+
+    function displayDictResult(obj) {
+      currentDictWordObj = obj;
+      document.getElementById('dictResultCard').style.display = 'block';
+
+      document.getElementById('dictResArticle').innerText = obj.art || '';
+      document.getElementById('dictResWord').innerText = obj.word;
+      document.getElementById('dictResPlural').innerText = obj.plural ? `(${obj.plural})` : '';
+      document.getElementById('dictResPhonetic').innerText = obj.phonetic || '';
+      document.getElementById('dictResVi').innerText = obj.vi;
+      document.getElementById('dictResLevelTopic').innerText = `Trình độ: ${obj.level} • Chủ đề: ${obj.topic}`;
+      document.getElementById('dictResSentenceDe').innerText = `"${obj.sentenceDe}"`;
+      document.getElementById('dictResSentenceVi').innerText = `➔ ${obj.sentenceVi}`;
+
+      const favBtn = document.getElementById('btnFavoriteDict');
+      const fullDe = (obj.art ? obj.art + ' ' : '') + obj.word;
+      const savedDict = isFavorited(fullDe) || isFavorited(obj.word);
+      if (savedDict) {
+        favBtn.innerHTML = `${getNotebookIconSvg(true, 16)} Đã lưu vào Sổ tay`;
+        favBtn.title = 'Đã lưu vào Sổ tay';
+        favBtn.style.background = 'linear-gradient(135deg, #d97706, #fbbf24)';
+        favBtn.style.color = '#0f172a';
+      } else {
+        favBtn.innerHTML = `${getNotebookIconSvg(false, 16)} Lưu vào Sổ tay`;
+        favBtn.title = 'Lưu vào Sổ tay';
+        favBtn.style.background = 'rgba(255,255,255,0.1)';
+        favBtn.style.color = '#fff';
+      }
+    }
+
+    function toggleFavoriteCurrentWord() {
+      if (!currentDictWordObj) return;
+      const fullDe = (currentDictWordObj.art ? currentDictWordObj.art + ' ' : '') + currentDictWordObj.word;
+      const added = toggleFavoriteItem({
+        de: fullDe,
+        vi: currentDictWordObj.vi,
+        type: 'Từ vựng',
+        ex: currentDictWordObj.sentenceDe
+      });
+      displayDictResult(currentDictWordObj);
+      showAppToast(added ? `Đã lưu "${fullDe}" vào Sổ tay` : `Đã xóa "${fullDe}" khỏi Sổ tay`, added ? 'saved' : 'removed');
+    }
+
+    // ==========================================
+    // 9. QUẢN LÝ SỔ TAY TỪ VỰNG (NOTEBOOK VIEW)
+    // ==========================================
+    function renderFavoritesList() {
+      const container = document.getElementById('favoritesListContainer');
+      if (!container) return;
+      const favs = getFavorites();
+
+      if (!favs.length) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: #64748b;">
+            <div style="margin-bottom: 14px; opacity: 0.65; color: #fbbf24;">${getNotebookIconSvg(false, 44)}</div>
+            <h4 style="color: #94a3b8; font-size: 1.1rem;">Chưa có từ vựng nào trong Sổ tay</h4>
+            <p style="font-size: 0.85rem; margin-top: 6px;">Hãy bấm vào biểu tượng cuốn sổ khi tra từ, đọc báo, học cụm từ hoặc tóm tắt bài giảng để lưu tại đây.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      favs.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.style.cssText = "background: rgba(0,0,0,0.35); padding: 16px 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; justify-content: space-between;";
+
+        card.innerHTML = `
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+              <span style="font-size: 0.72rem; font-weight: 800; color: #f43f5e; text-transform: uppercase;">${item.type}</span>
+              <button onclick="deleteFavoriteByIndex(${idx})" style="background: none; border: none; color: #64748b; font-size: 0.9rem; cursor: pointer; padding: 4px;" title="Xóa">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <strong style="color: #fff; font-size: 1.15rem; display: block; margin-bottom: 4px;">${item.de}</strong>
+            <div style="color: #34d399; font-size: 0.92rem; font-weight: 500; margin-bottom: 8px;">${item.vi}</div>
+            ${item.ex ? `<div style="font-size: 0.8rem; color: #94a3b8; font-style: italic; background: rgba(255,255,255,0.04); padding: 6px 10px; border-radius: 8px; margin-bottom: 12px;">"${item.ex}"</div>` : ''}
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
+            <span style="font-size: 0.72rem; color: #64748b;">Đã lưu: ${item.date || 'Hôm nay'}</span>
+            <button class="deck-btn btn-glass-subtle" onclick="speakText('${item.de.replace(/'/g, "\\'")}')" style="padding: 6px 12px; font-size: 0.78rem;">
+              <i class="fa-solid fa-volume-high"></i> Nghe đọc
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function deleteFavoriteByIndex(idx) {
+      let favs = getFavorites();
+      favs.splice(idx, 1);
+      saveFavorites(favs);
+      renderFavoritesList();
+    }
+
+    function clearAllFavorites() {
+      if (!confirm("Bạn có chắc chắn muốn xóa toàn bộ từ vựng trong Sổ tay?")) return;
+      saveFavorites([]);
+      renderFavoritesList();
+      showAppToast('Đã xóa toàn bộ Sổ tay', 'removed');
+    }
+
+    function exportFavorites() {
+      const favs = getFavorites();
+      if (!favs.length) { showAppToast('Sổ tay hiện đang trống!', 'removed'); return; }
+      let content = "=== SỔ TAY TỪ VỰNG & CỤM TỪ TIẾNG ĐỨC ===\n\n";
+      favs.forEach((it, i) => {
+        content += `${i + 1}. [${it.type}] ${it.de}\n➔ Nghĩa: ${it.vi}\n${it.ex ? `Ví dụ: ${it.ex}\n` : ''}\n`;
+      });
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `SoTayTuVung_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click();
+    }
+
+    // Tự động khởi tạo dữ liệu ban đầu
+    window.addEventListener('DOMContentLoaded', () => {
+      loadNewsArticle(0, null);
+      renderDailySpeakingScenarios();
+      updateFavBadge();
+      updateCollocHeartUI();
+    });
+  </script>
+</body>
+</html>

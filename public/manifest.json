@@ -1,0 +1,9 @@
+{
+  "name": "DeutschMaster • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức",
+  "short_name": "DeutschMaster",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "lang": "vi"
+}

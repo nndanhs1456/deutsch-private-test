@@ -1,0 +1,6 @@
+{
+  "name": "DeutschMaster",
+  "description": "Ứng dụng học tiếng Đức theo phương pháp tiếp thu tự nhiên SLA: Dịch bài giảng trực tiếp, Trình phát Playlist & Đài Đức, Shadowing, Đọc báo/Manga và Kho từ vựng B1-C1.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
