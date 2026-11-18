@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <rect x="86" y="86" width="340" height="340" rx="76" fill="none" stroke="#38bdf8" stroke-opacity="0.32" stroke-width="6"/>
+  <clipPath id="badgeClip">
+    <rect x="104" y="104" width="304" height="304" rx="64"/>
+  </clipPath>
+  <g clip-path="url(#badgeClip)">
+    <rect x="104" y="104" width="304" height="102" fill="#1f2937"/>
+    <rect x="104" y="206" width="304" height="100" fill="#ef4444"/>
+    <rect x="104" y="306" width="304" height="102" fill="#fbbf24"/>
+    <rect x="104" y="104" width="304" height="304" rx="64" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="8"/>
+  </g>
+</svg>

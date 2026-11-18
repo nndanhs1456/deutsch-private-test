@@ -7,11 +7,40 @@
     --font-mono: 'IBM Plex Mono', monospace;
   }
 
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     font-family: var(--font-sans);
     background-color: #080d1a;
     color: #f1f5f9;
     overflow-x: hidden;
+  }
+
+  button,
+  a,
+  nav,
+  aside,
+  header,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  article,
+  input,
+  textarea,
+  .selectable-text {
+    user-select: text;
+    -webkit-user-select: text;
   }
 
   code, pre, .font-mono {

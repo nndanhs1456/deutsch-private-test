@@ -35,12 +35,24 @@ const NOISE_PHRASES = [
   'auf x teilen',
   'per e-mail versenden',
   'diese seite drucken',
+  'zum seitenanfang',
+  'mehr zum thema',
+  'newsletter abonnieren',
+  'leserkommentare',
 ];
+
+function cleanParagraphText(raw: string): string {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\[\s*mehr\s*\]\s*$/i, '')
+    .trim();
+}
 
 function isNoiseParagraph(text: string): boolean {
   if (!text || text.length < 25) return true;
+  if (/^\[\s*mehr\s*\]$/i.test(text)) return true;
   const lower = text.toLowerCase();
-  if (text.length < 90 && NOISE_PHRASES.some((p) => lower.includes(p))) {
+  if (text.length < 110 && NOISE_PHRASES.some((p) => lower.includes(p))) {
     return true;
   }
   return false;
@@ -49,9 +61,10 @@ function isNoiseParagraph(text: string): boolean {
 function extractParagraphsFromHtmlFragment(html: string): string[] {
   if (!html) return [];
   const $ = cheerio.load(html);
+  $('script, style, nav, footer, header, aside, form, button, .ad, .ads, .advertisement, .shariff, .social').remove();
   const out: string[] = [];
   $('p, h2, h3, blockquote').each((_, el) => {
-    const txt = $(el).text().replace(/\s+/g, ' ').trim();
+    const txt = cleanParagraphText($(el).text());
     if (!isNoiseParagraph(txt) && !out.includes(txt)) {
       out.push(txt);
     }
@@ -71,7 +84,7 @@ function extractJsonLdArticleBody($: cheerio.CheerioAPI): string[] {
         if (node && typeof node.articleBody === 'string' && node.articleBody.length > 150) {
           const split = node.articleBody
             .split(/\n{2,}|\r\n\r\n/)
-            .map((s: string) => s.replace(/\s+/g, ' ').trim())
+            .map((s: string) => cleanParagraphText(s))
             .filter((s: string) => !isNoiseParagraph(s));
           for (const p of split) {
             if (!out.includes(p)) out.push(p);
@@ -120,11 +133,20 @@ export async function extractFullArticleContent(
       cached?.title ||
       'Artikel';
 
-    const image =
+    const rawImage =
       $('meta[property="og:image"]').attr('content')?.trim() ||
       $('article img').first().attr('src')?.trim() ||
       cached?.image ||
       '';
+
+    let image = rawImage;
+    if (rawImage && !/^https?:\/\//i.test(rawImage)) {
+      try {
+        image = new URL(rawImage, url).href;
+      } catch {
+        image = rawImage;
+      }
+    }
 
     const pubDate =
       $('meta[property="article:published_time"]').attr('content')?.slice(0, 10) ||
@@ -132,11 +154,21 @@ export async function extractFullArticleContent(
       cached?.pubDate ||
       'Hôm nay';
 
+    // Strip clutter globally from a cloned DOM before Readability & Cheerio extraction
+    const $clean = cheerio.load(html);
+    $clean(
+      'script, style, noscript, iframe, svg, nav, footer, header, aside, form, button, ' +
+        'figure figcaption, .nav, .menu, .navigation, .sidebar, .ad, .ads, .advertisement, ' +
+        '.cookie, .consent, .shariff, .social, .share, .meta-box, .teaser, .related-content, ' +
+        '.recommendations, [role="navigation"], [role="banner"], [aria-hidden="true"]'
+    ).remove();
+    const cleanedHtml = $clean.html() || html;
+
     // 1) @mozilla/readability + jsdom extraction
     let readabilityParagraphs: string[] = [];
     let readabilityTitle = '';
     try {
-      const dom = new JSDOM(html, { url });
+      const dom = new JSDOM(cleanedHtml, { url });
       const reader = new Readability(dom.window.document);
       const parsed = reader.parse();
       if (parsed) {
@@ -147,7 +179,7 @@ export async function extractFullArticleContent(
         if (readabilityParagraphs.length === 0 && parsed.textContent) {
           readabilityParagraphs = parsed.textContent
             .split(/\n+/)
-            .map((s) => s.replace(/\s+/g, ' ').trim())
+            .map((s) => cleanParagraphText(s))
             .filter((s) => !isNoiseParagraph(s));
         }
       }
@@ -156,15 +188,10 @@ export async function extractFullArticleContent(
       // ignore readability error and rely on cheerio selectors
     }
 
-    // 2) Cheerio main-content selectors (Tagesschau .textabsatz, DW .rich-text, Nachrichtenleicht, generic article/main)
-    const $clean = cheerio.load(html);
-    $clean(
-      'script, style, nav, footer, header, aside, form, figure figcaption, .shariff, .social, .meta-box, .teaser, .related-content, .advertisement'
-    ).remove();
-
+    // 2) Cheerio main-content selectors (Tagesschau, DW, Nachrichtenleicht, generic article/main)
     const selectorGroups = [
-      'article p.textabsatz, .copytext p, .m-ten p.textabsatz',
-      '.article-content p, .rich-text p, .long-text p',
+      'article p.textabsatz, .copytext p, .m-ten p.textabsatz, .article__body p',
+      '[itemprop="articleBody"] p, [data-testid="article-body"] p, .article-content p, .rich-text p, .long-text p',
       '.b-article-body p, .article-details-text p',
       'article p',
       'main p',
@@ -175,7 +202,7 @@ export async function extractFullArticleContent(
     for (const sel of selectorGroups) {
       const candidate: string[] = [];
       $clean(sel).each((_, el) => {
-        const text = $clean(el).text().replace(/\s+/g, ' ').trim();
+        const text = cleanParagraphText($clean(el).text());
         if (!isNoiseParagraph(text) && !candidate.includes(text)) {
           candidate.push(text);
         }

@@ -273,7 +273,7 @@
         background: #dc2626;
       }
 
-      /* Mini Video Preview Box (hidden by default unless toggled) */
+      /* Mini Video Preview Box (Clean Viewport: no YT UI clutter, non-interactive crop) */
       .dm-yt-video-wrap {
         width: 100%;
         height: 0;
@@ -281,6 +281,8 @@
         background: #000;
         transition: height 0.25s ease;
         position: relative;
+        pointer-events: none;
+        user-select: none;
       }
       .dm-yt-video-wrap.show-video {
         height: 200px;
@@ -290,6 +292,10 @@
         width: 100%;
         height: 200px;
         border: none;
+        display: block;
+        pointer-events: none;
+        transform: scale(1.18);
+        transform-origin: center center;
       }
 
       /* Controls Deck */
@@ -1365,7 +1371,10 @@
         videoId: tracks[0]?.videoId || 'f3DwawSJlTo',
         playerVars: {
           autoplay: 0,
-          controls: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
           rel: 0,
           modestbranding: 1,
           playsinline: 1,
@@ -1373,6 +1382,11 @@
         events: {
           onReady: (event) => {
             isPlayerReady = true;
+            const iframeEl = typeof event.target.getIframe === 'function' ? event.target.getIframe() : null;
+            if (iframeEl) {
+              iframeEl.style.pointerEvents = 'none';
+              iframeEl.setAttribute('tabindex', '-1');
+            }
             event.target.setVolume(volume);
             startProgressTicker();
           },

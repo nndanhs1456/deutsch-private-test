@@ -13,9 +13,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function getGenAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = String(process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '')
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .trim();
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured on the server.');
+    const err: any = new Error('Missing API Key (GEMINI_API_KEY chưa được cấu hình trên máy chủ).');
+    err.status = 500;
+    throw err;
   }
   return new GoogleGenAI({
     apiKey,

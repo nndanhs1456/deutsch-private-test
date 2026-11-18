@@ -1,9 +1,26 @@
 {
-  "name": "DeutschPrivate • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức",
+  "id": "/",
+  "name": "DeutschPrivate",
   "short_name": "DeutschPrivate",
-  "start_url": "./index.html",
+  "description": "Ứng dụng học tiếng Đức tự nhiên SLA, ghi âm bài giảng và dịch song ngữ trực tiếp.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#060913",
-  "theme_color": "#060913",
-  "lang": "vi"
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

@@ -1059,8 +1059,10 @@
     const readerBody = document.getElementById('liveNewsReaderBody');
     if (!readerBody || readerBody.dataset.selectionBound === 'true') return;
     readerBody.dataset.selectionBound = 'true';
+    readerBody.style.userSelect = 'text';
+    readerBody.style.webkitUserSelect = 'text';
 
-    readerBody.addEventListener('mouseup', () => {
+    const handleSelectionLookup = () => {
       setTimeout(() => {
         const selObj = window.getSelection ? window.getSelection() : null;
         if (!selObj) return;
@@ -1073,8 +1075,11 @@
           }
           window.lookupWordFromReader(selectedText, contextSentence);
         }
-      }, 60);
-    });
+      }, 90);
+    };
+
+    readerBody.addEventListener('mouseup', handleSelectionLookup);
+    readerBody.addEventListener('touchend', handleSelectionLookup);
   }
 
   function formatRssDate(dateStr) {
@@ -1299,17 +1304,6 @@
     `;
 
     try {
-      const res = await fetch(`/api/article?url=${encodeURIComponent(item.link)}`);
-      const article = await res.json().catch(() => ({}));
-
-      const title = article.title || item.title || '';
-      const pubDate = formatRssDate(article.pubDate || item.pubDate);
-      const coverImg = article.image || item.image || '';
-      let paragraphs =
-        Array.isArray(article.paragraphs) && article.paragraphs.length > 0
-          ? article.paragraphs
-          : [];
-
       const rssFallbackRaw =
         (Array.isArray(item.fullTextParagraphs) && item.fullTextParagraphs.length > 0
           ? item.fullTextParagraphs.join('\n\n')
@@ -1319,13 +1313,41 @@
         item.description ||
         '';
 
+      const cleanRssRaw = rssFallbackRaw.trim();
+      const isRssSummaryOnly =
+        !cleanRssRaw ||
+        /\[\s*mehr\s*\]\s*$/i.test(cleanRssRaw) ||
+        cleanRssRaw.length < 400;
+
+      let article = item._fullArticleCache || {};
+      let fetchedResOk = Boolean(item._fullArticleCache);
+
+      // Tự động gọi API server (/api/article) nếu chưa cache toàn văn hoặc RSS chỉ là tóm tắt ngắn (<400 ký tự / [mehr])
+      if (item.link && (!item._fullArticleCache || isRssSummaryOnly)) {
+        const res = await fetch(`/api/article?url=${encodeURIComponent(item.link)}`);
+        fetchedResOk = res.ok;
+        article = await res.json().catch(() => ({}));
+        if (res.ok && Array.isArray(article.paragraphs) && article.paragraphs.length > 0 && !article.blocked) {
+          item._fullArticleCache = article;
+        }
+      }
+
+      const title = article.title || item.title || '';
+      const pubDate = formatRssDate(article.pubDate || item.pubDate);
+      const coverImg = article.image || item.image || '';
+      let paragraphs =
+        Array.isArray(article.paragraphs) && article.paragraphs.length > 0
+          ? article.paragraphs
+          : [];
+
       const isBlockedOrSummaryOnly =
-        !res.ok ||
+        !fetchedResOk ||
         Boolean(article.blocked) ||
         paragraphs.length === 0;
 
-      if (paragraphs.length === 0 && rssFallbackRaw) {
-        paragraphs = rssFallbackRaw
+      if (paragraphs.length === 0 && cleanRssRaw) {
+        paragraphs = cleanRssRaw
+          .replace(/\[\s*mehr\s*\]\s*$/i, '')
           .split(/\n+/)
           .map((s) => s.trim())
           .filter((s) => s.length > 15);

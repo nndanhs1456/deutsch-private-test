@@ -74,7 +74,21 @@ export const GeminiChatView: React.FC<GeminiChatViewProps> = ({ compactPopup = f
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [errorDetail, setErrorDetail] = useState<string>('');
   const threadEndRef = useRef<HTMLDivElement | null>(null);
+
+  const getGeminiApiKey = (): string => {
+    let viteKey = '';
+    let viteUnprefixed = '';
+    let procKey = '';
+    try { viteKey = String(import.meta.env.VITE_GEMINI_API_KEY || ''); } catch {}
+    try { viteUnprefixed = String(import.meta.env.GEMINI_API_KEY || ''); } catch {}
+    try { procKey = String(process.env.GEMINI_API_KEY || ''); } catch {}
+    return (viteKey || viteUnprefixed || procKey || '')
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
+  };
 
   // "Chỉ dẫn cho AI" state & localStorage persistence
   const [instructionsOpen, setInstructionsOpen] = useState<boolean>(false);
@@ -118,11 +132,13 @@ export const GeminiChatView: React.FC<GeminiChatViewProps> = ({ compactPopup = f
   const handleRoleChange = (nextRole: RoleKey) => {
     setRoleKey(nextRole);
     setErrorMsg('');
+    setErrorDetail('');
     setMessages([{ id: `init-${Date.now()}`, role: 'model', text: ROLE_CONFIG[nextRole].greeting }]);
   };
 
   const handleResetChat = () => {
     setErrorMsg('');
+    setErrorDetail('');
     setMessages([{ id: `init-${Date.now()}`, role: 'model', text: ROLE_CONFIG[roleKey].greeting }]);
   };
 
@@ -169,6 +185,7 @@ export const GeminiChatView: React.FC<GeminiChatViewProps> = ({ compactPopup = f
     setMessages(nextHistory);
     if (!overrideText) setInputText('');
     setErrorMsg('');
+    setErrorDetail('');
     setIsSending(true);
 
     try {
@@ -189,20 +206,62 @@ export const GeminiChatView: React.FC<GeminiChatViewProps> = ({ compactPopup = f
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.error || 'Không thể nhận phản hồi từ trợ lý AI.');
+      if (res.ok && data?.reply) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `model-${Date.now()}`,
+            role: 'model',
+            text: String(data.reply || ''),
+          },
+        ]);
+        return;
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `model-${Date.now()}`,
-          role: 'model',
-          text: String(data.reply || ''),
-        },
-      ]);
+      const serverDetail = String(data?.error || data?.code || res.statusText || 'Unknown error');
+      const clientKey = getGeminiApiKey();
+
+      // Fallback trực tiếp nếu route /api/chat không tồn tại (404) hoặc server chưa nạp key nhưng client đã ánh xạ qua Vite define
+      if (clientKey && (res.status === 404 || /missing api key/i.test(serverDetail))) {
+        const directRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${encodeURIComponent(clientKey)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: ROLE_CONFIG[roleKey].desc }] },
+              contents: apiMessages.map((m) => ({
+                role: m.role === 'model' ? 'model' : 'user',
+                parts: [{ text: m.text }],
+              })),
+            }),
+          }
+        );
+        const directData = await directRes.json().catch(() => ({}));
+        const directReply = directData?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (directRes.ok && directReply) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `model-${Date.now()}`,
+              role: 'model',
+              text: String(directReply).trim(),
+            },
+          ]);
+          return;
+        }
+        const directErr = directData?.error?.message || directRes.statusText || 'API Error';
+        throw new Error(`HTTP ${directRes.status} — ${directErr}`);
+      }
+
+      const errCodeLabel = !clientKey && /missing api key/i.test(serverDetail)
+        ? 'Missing API Key'
+        : `HTTP ${res.status}`;
+      throw new Error(`${errCodeLabel}: ${serverDetail}`);
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Lỗi kết nối máy chủ AI.');
+      const detail = String(err?.message || 'NetworkError / Không thể kết nối máy chủ AI');
+      setErrorMsg('Không thể nhận phản hồi từ Gia sư AI.');
+      setErrorDetail(detail);
     } finally {
       setIsSending(false);
     }
@@ -345,7 +404,12 @@ export const GeminiChatView: React.FC<GeminiChatViewProps> = ({ compactPopup = f
 
           {errorMsg && (
             <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-300">
-              {errorMsg}
+              <div className="font-semibold">{errorMsg}</div>
+              {errorDetail && (
+                <div className="mt-1 border-t border-rose-500/25 pt-1 font-mono text-[11px] text-rose-200/90">
+                  Mã / Lý do: {errorDetail}
+                </div>
+              )}
             </div>
           )}
 

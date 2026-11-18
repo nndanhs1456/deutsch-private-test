@@ -131,15 +131,20 @@ export const LectureTranslatorView: React.FC<LectureTranslatorViewProps> = ({
   };
 
   const getGroqApiKey = () => {
-    const envKey = (
-      (typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_GROQ_API_KEY : '') ||
-      (typeof process !== 'undefined' ? (process as any).env?.VITE_GROQ_API_KEY : '') ||
-      ''
-    )
-      .toString()
-      .trim()
-      .replace(/^["']|["']$/g, '')
-      .trim();
+    const readTrim = (fn: () => unknown) => {
+      try {
+        return String(fn() || '')
+          .trim()
+          .replace(/^["']|["']$/g, '')
+          .trim();
+      } catch {
+        return '';
+      }
+    };
+    const envKey =
+      readTrim(() => import.meta.env.VITE_GROQ_API_KEY) ||
+      readTrim(() => process.env.VITE_GROQ_API_KEY) ||
+      readTrim(() => process.env.GROQ_API_KEY);
     if (envKey) return envKey;
 
     let storedKey = '';

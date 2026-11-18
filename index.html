@@ -6,11 +6,15 @@
   <title>DeutschPrivate • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức</title>
   
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <link rel="manifest" href="./manifest.json">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#060913">
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DeutschPrivate" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +46,50 @@
       margin: 0;
       padding: 0;
       -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    a,
+    nav,
+    aside,
+    .sidebar,
+    .nav-item,
+    .deck-btn,
+    .hamburger-btn,
+    [role="button"] {
+      -webkit-tap-highlight-color: transparent;
       user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button,
+    a,
+    .nav-item,
+    [role="button"] {
+      touch-action: manipulation;
+    }
+
+    #liveNewsReaderBody,
+    #liveNewsReaderBody *,
+    .reader-article-paragraphs,
+    .reader-article-paragraphs *,
+    #newsArticleContent,
+    #newsArticleContent *,
+    #liveGermanList,
+    #liveGermanList *,
+    #liveViList,
+    #liveViList *,
+    #liveParagraphContainer,
+    #liveParagraphContainer *,
+    #dictResultBox,
+    #dictResultBox *,
+    #aiChatThread,
+    #aiChatThread *,
+    input,
+    textarea {
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     html,
@@ -807,9 +854,14 @@
       </button>
       <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em;">DeutschPrivate</div>
     </div>
-    <button class="hamburger-btn" style="width: 38px; height: 38px; font-size: 1rem;" onclick="switchTab('live-trans')" title="Mở nhanh Dịch Trên Lớp">
-      <i class="fa-solid fa-microphone" style="color: #f43f5e;"></i>
-    </button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="pwaInstallBtnMobile" type="button" onclick="window.triggerPwaInstall()" class="deck-btn btn-primary-ios" style="display: none; padding: 7px 11px; font-size: 0.76rem; border-radius: 10px; background: linear-gradient(135deg, #0284c7, #38bdf8);" title="Cài đặt ứng dụng DeutschPrivate">
+        <i class="fa-solid fa-download"></i> Cài đặt
+      </button>
+      <button class="hamburger-btn" style="width: 38px; height: 38px; font-size: 1rem;" onclick="switchTab('live-trans')" title="Mở nhanh Dịch Trên Lớp">
+        <i class="fa-solid fa-microphone" style="color: #f43f5e;"></i>
+      </button>
+    </div>
   </div>
 
   <!-- iOS Fluid Glass Container -->
@@ -927,14 +979,20 @@
           </div>
         </div>
 
-        <!-- Thanh chuyển đổi chế độ xem cho Kollokationen & Wortschatz -->
-        <div id="vocabViewModeSwitcher" style="display: none; align-items: center; gap: 6px; padding: 5px; border-radius: 16px; background: rgba(0, 0, 0, 0.42); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(12px); flex-shrink: 0; max-width: 100%; flex-wrap: wrap;">
-          <button id="btnVocabModeList" class="deck-btn btn-primary-ios" onclick="window.switchVocabViewMode('list')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #38bdf8);">
-            <i class="fa-solid fa-table-cells-large"></i> Danh sách thẻ
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; max-width: 100%;">
+          <button id="pwaInstallBtnDesktop" type="button" onclick="window.triggerPwaInstall()" class="deck-btn btn-primary-ios" style="display: none; padding: 8px 14px; font-size: 0.82rem; border-radius: 12px; background: linear-gradient(135deg, #0284c7, #38bdf8); box-shadow: 0 6px 16px rgba(56, 189, 248, 0.25);" title="Cài đặt DeutschPrivate thành ứng dụng toàn màn hình">
+            <i class="fa-solid fa-mobile-screen-button"></i> Cài đặt App
           </button>
-          <button id="btnVocabModeFlashcard" class="deck-btn btn-glass-subtle" onclick="window.switchVocabViewMode('flashcard')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px;">
-            <i class="fa-solid fa-clone"></i> Luyện lật thẻ
-          </button>
+
+          <!-- Thanh chuyển đổi chế độ xem cho Kollokationen & Wortschatz -->
+          <div id="vocabViewModeSwitcher" style="display: none; align-items: center; gap: 6px; padding: 5px; border-radius: 16px; background: rgba(0, 0, 0, 0.42); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(12px); flex-shrink: 0; max-width: 100%; flex-wrap: wrap;">
+            <button id="btnVocabModeList" class="deck-btn btn-primary-ios" onclick="window.switchVocabViewMode('list')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #38bdf8);">
+              <i class="fa-solid fa-table-cells-large"></i> Danh sách thẻ
+            </button>
+            <button id="btnVocabModeFlashcard" class="deck-btn btn-glass-subtle" onclick="window.switchVocabViewMode('flashcard')" style="padding: 8px 15px; font-size: 0.85rem; border-radius: 12px;">
+              <i class="fa-solid fa-clone"></i> Luyện lật thẻ
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2163,12 +2221,21 @@
   <script src="./vocab_hub.js"></script>
   <script src="./yt_floating_player.js"></script>
   <script type="module">
-    const viteEnvKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
-    const nodeEnvKey = (typeof process !== 'undefined' && process.env && process.env.VITE_GROQ_API_KEY) || '';
-    window.__VITE_GROQ_API_KEY__ = String(viteEnvKey || nodeEnvKey || '')
-      .trim()
-      .replace(/^["']|["']$/g, '')
-      .trim();
+    const readEnvTrim = (fn) => {
+      try {
+        return String(fn() || '').trim().replace(/^["']|["']$/g, '').trim();
+      } catch {
+        return '';
+      }
+    };
+    window.__VITE_GROQ_API_KEY__ =
+      readEnvTrim(() => import.meta.env.VITE_GROQ_API_KEY) ||
+      readEnvTrim(() => process.env.VITE_GROQ_API_KEY) ||
+      readEnvTrim(() => process.env.GROQ_API_KEY);
+    window.__GEMINI_API_KEY__ =
+      readEnvTrim(() => import.meta.env.VITE_GEMINI_API_KEY) ||
+      readEnvTrim(() => import.meta.env.GEMINI_API_KEY) ||
+      readEnvTrim(() => process.env.GEMINI_API_KEY);
   </script>
   <script>
     // ==========================================
@@ -4645,10 +4712,19 @@
         wrap.style.cssText = `align-self: ${isUser ? 'flex-end' : 'flex-start'}; max-width: 88%; padding: 10px 13px; border-radius: 14px; font-size: 0.86rem; line-height: 1.55; white-space: pre-wrap; ${
           isUser
             ? 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.25)); border: 1px solid rgba(16, 185, 129, 0.45); color: #ffffff;'
+            : m.errorDetail
+            ? 'background: rgba(127, 29, 29, 0.35); border: 1px solid rgba(248, 113, 113, 0.45); color: #fecaca;'
             : 'background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.28); color: #f1f5f9;'
         }`;
-        wrap.textContent = m.text;
-        if (!isUser) {
+        const msgMain = document.createElement('div');
+        msgMain.textContent = m.text;
+        wrap.appendChild(msgMain);
+        if (m.errorDetail) {
+          const detailLine = document.createElement('div');
+          detailLine.style.cssText = 'margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(248, 113, 113, 0.3); font-size: 0.74rem; color: #fca5a5; font-family: monospace; word-break: break-word;';
+          detailLine.textContent = `Mã / Lý do: ${m.errorDetail}`;
+          wrap.appendChild(detailLine);
+        } else if (!isUser) {
           const actRow = document.createElement('div');
           actRow.style.cssText = 'margin-top: 7px; display: flex; justify-content: flex-end;';
           const spkBtn = document.createElement('button');
@@ -4710,14 +4786,47 @@
           })
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data?.error || 'Không thể kết nối Trợ lý AI.');
+        if (res.ok && data?.reply) {
+          aiChatMessages.push({ role: 'model', text: data.reply || '' });
+          return;
         }
-        aiChatMessages.push({ role: 'model', text: data.reply || '' });
+
+        const serverDetail = String(data?.error || data?.code || res.statusText || 'Lỗi máy chủ');
+        const clientGeminiKey = String(window.__GEMINI_API_KEY__ || '').trim();
+
+        if (clientGeminiKey && (res.status === 404 || /missing api key/i.test(serverDetail))) {
+          const directRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${encodeURIComponent(clientGeminiKey)}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: recent10Messages.map((m) => ({
+                  role: m.role === 'model' ? 'model' : 'user',
+                  parts: [{ text: m.text }]
+                }))
+              })
+            }
+          );
+          const directData = await directRes.json().catch(() => ({}));
+          const directReply = directData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (directRes.ok && directReply) {
+            aiChatMessages.push({ role: 'model', text: String(directReply).trim() });
+            return;
+          }
+          const directReason = directData?.error?.message || directRes.statusText || 'API Error';
+          throw new Error(`HTTP ${directRes.status} — ${directReason}`);
+        }
+
+        const codePrefix = !clientGeminiKey && /missing api key/i.test(serverDetail)
+          ? 'Missing API Key'
+          : `HTTP ${res.status}`;
+        throw new Error(`${codePrefix}: ${serverDetail}`);
       } catch (err) {
         aiChatMessages.push({
           role: 'model',
-          text: `Lỗi: ${err?.message || 'Không thể kết nối máy chủ AI.'}`
+          text: 'Không thể kết nối Trợ lý AI.',
+          errorDetail: err?.message || 'NetworkError / Không thể kết nối máy chủ AI'
         });
       } finally {
         aiChatSending = false;
@@ -4734,6 +4843,95 @@
       updateCollocHeartUI();
       renderAiChatThread();
     });
+
+    // ==========================================
+    // PWA: Đăng ký Service Worker (/sw.js) & Cài đặt App (Standalone)
+    // ==========================================
+    (function initPwaSupport() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+
+      let deferredInstallPrompt = null;
+      const isStandaloneMode = () =>
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+      const isIosDevice = () =>
+        /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
+
+      function updatePwaInstallButtons() {
+        const showPromptBtn = !isStandaloneMode() && (!!deferredInstallPrompt || isIosDevice());
+        const desktopBtn = document.getElementById('pwaInstallBtnDesktop');
+        const mobileBtn = document.getElementById('pwaInstallBtnMobile');
+        if (desktopBtn) desktopBtn.style.display = showPromptBtn ? 'inline-flex' : 'none';
+        if (mobileBtn) mobileBtn.style.display = showPromptBtn ? 'inline-flex' : 'none';
+      }
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        updatePwaInstallButtons();
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        updatePwaInstallButtons();
+        if (typeof showAppToast === 'function') {
+          showAppToast('Đã cài đặt DeutschPrivate lên màn hình chính!', 'saved');
+        }
+      });
+
+      window.triggerPwaInstall = async function() {
+        if (deferredInstallPrompt) {
+          await deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice.catch(() => null);
+          if (choice && choice.outcome === 'accepted') {
+            deferredInstallPrompt = null;
+            updatePwaInstallButtons();
+          }
+          return;
+        }
+        if (isIosDevice() && !isStandaloneMode()) {
+          const modal = document.getElementById('pwaIosGuideModal');
+          if (modal) modal.style.display = 'flex';
+        }
+      };
+
+      function updateOfflineIndicator() {
+        const badge = document.getElementById('pwaOfflineBadge');
+        if (badge) {
+          badge.style.display = navigator.onLine ? 'none' : 'flex';
+        }
+      }
+
+      window.addEventListener('online', updateOfflineIndicator);
+      window.addEventListener('offline', updateOfflineIndicator);
+      window.addEventListener('DOMContentLoaded', () => {
+        updatePwaInstallButtons();
+        updateOfflineIndicator();
+      });
+    })();
   </script>
+
+  <!-- Offline Status Indicator -->
+  <div id="pwaOfflineBadge" style="display: none; position: fixed; bottom: 16px; left: 16px; z-index: 950; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 10px; background: rgba(245, 158, 11, 0.94); color: #0f172a; font-size: 0.78rem; font-weight: 700; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);">
+    <i class="fa-solid fa-wifi"></i> Đang ngoại tuyến — Dùng bộ nhớ đệm
+  </div>
+
+  <!-- iOS Safari Install Guide Modal -->
+  <div id="pwaIosGuideModal" style="display: none; position: fixed; inset: 0; z-index: 1200; background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px;">
+    <div class="liquid-glass" style="max-width: 360px; width: 100%; padding: 22px; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(56, 189, 248, 0.35);">
+      <h4 style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin-bottom: 8px;">Cài đặt DeutschPrivate trên iOS</h4>
+      <p style="font-size: 0.86rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 16px;">
+        1. Chạm biểu tượng <strong>Chia sẻ (Share)</strong> trên thanh Safari.<br>
+        2. Chọn <strong>Thêm vào MH chính (Add to Home Screen)</strong> để mở toàn màn hình.
+      </p>
+      <button type="button" onclick="document.getElementById('pwaIosGuideModal').style.display='none'" class="deck-btn btn-primary-ios" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #0284c7, #38bdf8);">
+        Đã hiểu
+      </button>
+    </div>
+  </div>
 </body>
 </html>
