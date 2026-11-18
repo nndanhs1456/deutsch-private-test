@@ -88,7 +88,8 @@
     style.textContent = `
       .dm-yt-root {
         position: fixed;
-        right: 20px;
+        left: 328px;
+        right: auto;
         bottom: 20px;
         z-index: 30;
         font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", sans-serif;
@@ -96,13 +97,20 @@
         user-select: none;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: flex-start;
+        transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      body.dm-sidebar-collapsed .dm-yt-root {
+        left: 104px;
+      }
+      body.news-focus-mode .dm-yt-root {
+        left: 20px;
       }
 
       /* EXPANDED POPUP CARD */
       .dm-yt-popup {
         width: 410px;
-        max-width: calc(100vw - 24px);
+        max-width: calc(100vw - 28px);
         background: #12151f;
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 22px;
@@ -672,29 +680,51 @@
         display: flex;
       }
 
+      @media (max-width: 950px) {
+        .dm-yt-root,
+        body.dm-sidebar-collapsed .dm-yt-root {
+          left: 14px;
+          right: auto;
+          bottom: 16px;
+          align-items: flex-start;
+        }
+        .dm-yt-popup {
+          width: min(410px, calc(100vw - 28px));
+          max-width: calc(100vw - 28px);
+        }
+        .dm-yt-pill-bar {
+          max-width: calc(100vw - 92px);
+          gap: 7px;
+        }
+      }
+
       @media (max-width: 600px) {
-        .dm-yt-root {
-          right: 10px;
-          bottom: 12px;
-          left: 10px;
+        .dm-yt-root,
+        body.dm-sidebar-collapsed .dm-yt-root {
+          left: 12px;
+          right: auto;
+          bottom: 14px;
         }
         .dm-yt-root.is-minimized {
-          left: auto;
-          right: 14px;
+          left: 14px;
+          right: auto;
           bottom: 16px;
         }
         .dm-yt-popup {
-          width: 100%;
-          max-width: 100%;
+          width: calc(100vw - 24px);
+          max-width: calc(100vw - 24px);
         }
         .dm-yt-pill-bar {
-          width: 100%;
-          justify-content: space-between;
-          gap: 7px;
+          max-width: calc(100vw - 92px);
+          gap: 6px;
+        }
+        .dm-yt-pill-thumb {
+          display: none;
         }
         .dm-yt-pill-meta {
           flex: 1;
-          max-width: none;
+          min-width: 0;
+          max-width: 145px;
         }
       }
     `;
@@ -869,7 +899,7 @@
           <span id="dmYtPillPlBadge">Deutsch (3)</span>
         </button>
 
-        <button class="dm-yt-pill-collapse" id="dmYtPillCollapseBtn" title="Thu gọn thanh phát xuống góc phải">
+        <button class="dm-yt-pill-collapse" id="dmYtPillCollapseBtn" title="Thu gọn thanh phát xuống góc trái">
           <i class="fa-solid fa-chevron-down"></i>
         </button>
       </div>

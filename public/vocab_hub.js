@@ -38,9 +38,76 @@
     return 'OTHER';
   }
 
+  function normalizeText(str) {
+    if (!str) return '';
+    let s = String(str).toLowerCase();
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    s = s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+    return s.trim();
+  }
+
+  function getQueryVariations(query) {
+    const norm = normalizeText(query);
+    const variants = new Set([norm]);
+    variants.add(norm.replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü').replace(/ss/g, 'ß'));
+    return Array.from(variants);
+  }
+
+  function getItemSearchScore(item, query) {
+    if (!query || !query.trim()) return 1;
+    const variants = getQueryVariations(query);
+    let bestScore = 0;
+
+    const rawWord = (item.word || item.de || '').toLowerCase();
+    const cleanWord = rawWord.replace(/^(der|die|das|ein|eine)\s+/i, '').trim();
+    const wordNorm = normalizeText(rawWord);
+    const cleanWordNorm = normalizeText(cleanWord);
+
+    const viMeaning = (item.en || item.vi || '').toLowerCase();
+    const viNorm = normalizeText(viMeaning);
+
+    const exDe = (item.example || item.sentence || '').toLowerCase();
+    const exDeNorm = normalizeText(exDe);
+
+    const exVi = (item.exampleEn || item.sentenceVi || '').toLowerCase();
+    const exViNorm = normalizeText(exVi);
+
+    for (const q of variants) {
+      if (!q) continue;
+
+      // Priority 1 (100 pts): Exact match with German word (clean) OR exact match with Vietnamese meaning
+      if (cleanWordNorm === q || wordNorm === q || viNorm === q || viNorm.split(/[,;]/).map(s => s.trim()).includes(q)) {
+        bestScore = Math.max(bestScore, 100);
+        continue;
+      }
+
+      // Priority 2 (80 pts): Starts with keyword (startsWith) in German word or Vietnamese meaning
+      if (cleanWordNorm.startsWith(q) || wordNorm.startsWith(q) || viNorm.startsWith(q)) {
+        bestScore = Math.max(bestScore, 80);
+        continue;
+      }
+
+      // Priority 3 (50 pts): Contains keyword (includes) in German word or Vietnamese meaning
+      if (cleanWordNorm.includes(q) || wordNorm.includes(q) || viNorm.includes(q)) {
+        bestScore = Math.max(bestScore, 50);
+        continue;
+      }
+
+      // Priority 4 (10 pts): Only appears in German example sentence or example translation
+      if (exDeNorm.includes(q) || exViNorm.includes(q)) {
+        bestScore = Math.max(bestScore, 10);
+        continue;
+      }
+    }
+
+    return bestScore;
+  }
+
   function getFilteredWords() {
     const source = window.allHubWords || [];
-    return source.filter((item) => {
+    const query = currentSearchQuery;
+
+    const filtered = source.filter((item) => {
       if (currentLevelFilter !== 'ALL' && item.level !== currentLevelFilter) {
         return false;
       }
@@ -50,16 +117,20 @@
       if (currentWortartFilter !== 'ALL' && classifyWortart(item) !== currentWortartFilter) {
         return false;
       }
-      if (currentSearchQuery.trim()) {
-        const q = currentSearchQuery.toLowerCase().trim();
-        const w = (item.word || item.de || '').toLowerCase();
-        const vi = (item.en || '').toLowerCase();
-        const cat = (item.catVi || '').toLowerCase();
-        const ex = (item.example || '').toLowerCase();
-        return w.includes(q) || vi.includes(q) || cat.includes(q) || ex.includes(q);
+      if (query.trim()) {
+        const score = getItemSearchScore(item, query);
+        item._searchScore = score;
+        return score > 0;
       }
+      item._searchScore = 1;
       return true;
     });
+
+    if (query.trim()) {
+      filtered.sort((a, b) => (b._searchScore || 0) - (a._searchScore || 0));
+    }
+
+    return filtered;
   }
 
   function renderCategoryChips() {
@@ -524,6 +595,8 @@
 
     const loadingEl = document.getElementById('modalLoadingState');
     if (loadingEl) loadingEl.style.display = item.isLoading ? 'block' : 'none';
+    const errEl = document.getElementById('modalErrorState');
+    if (errEl) errEl.style.display = 'none';
 
     const artEl = document.getElementById('modalDictArt');
     if (artEl) {
@@ -539,6 +612,26 @@
     }
 
     document.getElementById('modalDictWord').innerText = item.word || item.de || '';
+    const pluralEl = document.getElementById('modalDictPlural');
+    if (pluralEl) pluralEl.innerText = item.grammarBadge ? `(${item.grammarBadge})` : '';
+
+    const phoneticEl = document.getElementById('modalDictPhonetic');
+    if (phoneticEl) phoneticEl.innerText = item.ipa || '';
+
+    const grammarTipEl = document.getElementById('modalDictGrammarTip');
+    if (grammarTipEl) grammarTipEl.innerText = item.posLabel || '';
+
+    const contextDescEl = document.getElementById('modalDictContextDesc');
+    if (contextDescEl) {
+      if (item.grammarDetails) {
+        contextDescEl.innerText = item.grammarDetails;
+        contextDescEl.style.display = 'block';
+      } else {
+        contextDescEl.innerText = '';
+        contextDescEl.style.display = 'none';
+      }
+    }
+
     document.getElementById('modalDictLevelBadge').innerText = item.level || 'B1/B2';
     document.getElementById('modalDictTopicName').innerText = item.catVi || 'Tổng hợp';
     document.getElementById('modalDictViMeaning').innerText = item.en || 'Đang dịch nghĩa...';
@@ -564,7 +657,7 @@
     const added = window.toggleFavoriteItem({
       de: fullDe,
       vi: currentModalItem.en || '',
-      type: currentModalItem.catVi || 'Từ vựng',
+      type: currentModalItem.posLabel || currentModalItem.catVi || 'Từ vựng',
       ex: currentModalItem.example || '',
     });
     if (typeof window.showAppToast === 'function') {
@@ -589,7 +682,7 @@
   };
 
   // =========================================================================
-  // TRÌNH ĐỌC BÁO TIẾNG ĐỨC TRỰC TIẾP (LIVE RSS + CHEERIO READER VIEW)
+  // TRÌNH ĐỌC BÁO TIẾNG ĐỨC TRỰC TIẾP (LIVE RSS + READABILITY READER VIEW)
   // =========================================================================
 
   function escapeHtml(str) {
@@ -603,7 +696,6 @@
   // Biến đoạn văn tiếng Đức thành các từ có thể bấm vào tra từ ngay lập tức
   function tokenizeGermanParagraph(paragraphText) {
     const safeSentenceAttr = escapeHtml(paragraphText);
-    // Tách theo khoảng trắng nhưng giữ nguyên dấu câu bên ngoài thẻ span từ
     return paragraphText
       .split(/(\s+)/)
       .map((token) => {
@@ -618,7 +710,6 @@
 
   window.handleReaderWordClick = function (el, ev) {
     if (ev) ev.stopPropagation();
-    // Nếu người dùng đang bôi đen một cụm từ dài thì ưu tiên cụm từ bôi đen
     const sel = window.getSelection ? window.getSelection().toString().trim() : '';
     if (sel && sel.length > 1 && sel.includes(' ')) {
       return;
@@ -641,9 +732,7 @@
           return data[0].map((part) => part[0]).join('');
         }
       }
-    } catch (_e) {
-      // Fallback sang MyMemory nếu bị chặn
-    }
+    } catch (_e) {}
     try {
       const res2 = await fetch(
         `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=de|vi`
@@ -658,6 +747,208 @@
     return '';
   }
 
+  function mapWiktionaryPosToVietnamese(headingText) {
+    const h = String(headingText || '').toLowerCase();
+    if (h.includes('substantiv')) {
+      if (/\bm\b|maskulinum/.test(h)) return { art: 'der', posLabel: 'Danh từ giống đực (der)' };
+      if (/\bf\b|femininum/.test(h)) return { art: 'die', posLabel: 'Danh từ giống cái (die)' };
+      if (/\bn\b|neutrum/.test(h)) return { art: 'das', posLabel: 'Danh từ giống trung (das)' };
+      return { art: '', posLabel: 'Danh từ (Substantiv)' };
+    }
+    if (h.includes('verb')) return { art: '', posLabel: 'Động từ (Verb)' };
+    if (h.includes('adjektiv')) return { art: '', posLabel: 'Tính từ (Adjektiv)' };
+    if (h.includes('adverb')) return { art: '', posLabel: 'Trạng từ (Adverb)' };
+    if (h.includes('präposition')) return { art: '', posLabel: 'Giới từ (Präposition)' };
+    if (h.includes('konjunktion')) return { art: '', posLabel: 'Liên từ (Konjunktion)' };
+    if (h.includes('pronomen')) return { art: '', posLabel: 'Đại từ (Pronomen)' };
+    if (h.includes('interjektion')) return { art: '', posLabel: 'Thán từ (Interjektion)' };
+    if (h.includes('deklinierte form')) return { art: '', posLabel: 'Dạng biến cách danh/tính từ', isInflected: true };
+    if (h.includes('konjugierte form')) return { art: '', posLabel: 'Dạng chia động từ', isInflected: true };
+    return { art: '', posLabel: headingText || 'Từ vựng tiếng Đức' };
+  }
+
+  function parseWiktionaryExtract(htmlExtract, fallbackTitle) {
+    if (!htmlExtract) return null;
+    const container = document.createElement('div');
+    container.innerHTML = htmlExtract;
+
+    const children = Array.from(container.children);
+    let inGermanSection = false;
+    let germanHeadingFound = false;
+    const germanNodes = [];
+
+    for (const el of children) {
+      if (el.tagName === 'H2') {
+        const txt = (el.textContent || '').trim();
+        if (/\(Deutsch\)/i.test(txt) || /Deutsch/i.test(txt)) {
+          inGermanSection = true;
+          germanHeadingFound = true;
+          continue;
+        } else if (inGermanSection) {
+          break;
+        }
+      } else if (inGermanSection) {
+        germanNodes.push(el);
+      }
+    }
+
+    if (!germanHeadingFound) {
+      germanNodes.push(...children);
+    }
+    if (germanNodes.length === 0) return null;
+
+    let posHeading = '';
+    let worttrennungText = '';
+    let ipaText = '';
+    let grammatischeText = '';
+    const definitionsDe = [];
+    const examplesDe = [];
+
+    let currentSection = '';
+    for (const el of germanNodes) {
+      const tag = el.tagName;
+      const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!txt) continue;
+
+      if (tag === 'H3' && !posHeading) {
+        posHeading = txt;
+        currentSection = '';
+        continue;
+      }
+
+      if (tag === 'P') {
+        if (/^Worttrennung:/i.test(txt)) currentSection = 'worttrennung';
+        else if (/^Aussprache:/i.test(txt)) currentSection = 'aussprache';
+        else if (/^Bedeutungen:/i.test(txt)) currentSection = 'bedeutungen';
+        else if (/^Beispiele:/i.test(txt)) currentSection = 'beispiele';
+        else if (/^Grammatische Merkmale:/i.test(txt)) currentSection = 'grammatik';
+        else currentSection = '';
+        continue;
+      }
+
+      if (tag === 'DL') {
+        const dds = Array.from(el.querySelectorAll('dd'));
+        if (currentSection === 'worttrennung' && dds[0]) {
+          worttrennungText = (dds[0].textContent || '').replace(/\s+/g, ' ').trim();
+        } else if (currentSection === 'aussprache') {
+          for (const dd of dds) {
+            const t = (dd.textContent || '').replace(/\s+/g, ' ').trim();
+            if (/^IPA:/i.test(t)) {
+              const m = t.match(/IPA:\s*(.+)/i);
+              if (m) ipaText = m[1].trim();
+              break;
+            }
+          }
+        } else if (currentSection === 'bedeutungen') {
+          for (const dd of dds) {
+            if (definitionsDe.length >= 3) break;
+            const cleanDef = (dd.textContent || '')
+              .replace(/^\s*\[[^\]]+\]\s*/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (cleanDef && !definitionsDe.includes(cleanDef)) {
+              definitionsDe.push(cleanDef);
+            }
+          }
+        } else if (currentSection === 'beispiele') {
+          for (const dd of dds) {
+            if (examplesDe.length >= 2) break;
+            const cleanEx = (dd.textContent || '')
+              .replace(/^\s*\[[^\]]+\]\s*/g, '')
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (cleanEx && cleanEx.length > 8 && !examplesDe.includes(cleanEx)) {
+              examplesDe.push(cleanEx);
+            }
+          }
+        } else if (currentSection === 'grammatik') {
+          grammatischeText = dds.map((d) => (d.textContent || '').replace(/\s+/g, ' ').trim()).join('; ');
+        }
+      }
+    }
+
+    const posInfo = mapWiktionaryPosToVietnamese(posHeading);
+
+    // Trích thông tin ngữ pháp cốt lõi (Plural / Präteritum / Partizip II / Komparativ)
+    let grammarSummary = '';
+    if (worttrennungText && worttrennungText.includes(',')) {
+      const idx = worttrennungText.indexOf(',');
+      grammarSummary = worttrennungText.slice(idx + 1).trim();
+    }
+
+    let baseLemma = '';
+    if (posInfo.isInflected && grammatischeText) {
+      const lemmaMatch = grammatischeText.match(/des\s+(?:Substantivs|Verbs|Adjektivs|Pronomens|Wortes)\s+([A-Za-zÄÖÜäöüß\-]+)/i);
+      if (lemmaMatch && lemmaMatch[1]) {
+        baseLemma = lemmaMatch[1].trim();
+      }
+    }
+
+    return {
+      title: fallbackTitle,
+      art: posInfo.art,
+      posLabel: posInfo.posLabel,
+      isInflected: Boolean(posInfo.isInflected),
+      baseLemma,
+      grammatischeText,
+      grammarSummary,
+      ipa: ipaText,
+      definitionsDe,
+      examplesDe,
+    };
+  }
+
+  async function fetchWiktionaryRaw(titlesList) {
+    const uniqueTitles = Array.from(new Set(titlesList.filter(Boolean)));
+    if (!uniqueTitles.length) return null;
+    const apiUrl = `https://de.wiktionary.org/w/api.php?action=query&prop=extracts&format=json&origin=*&redirects=1&titles=${encodeURIComponent(uniqueTitles.join('|'))}`;
+    const res = await fetch(apiUrl);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const pages = json?.query?.pages ? Object.values(json.query.pages) : [];
+    const validPages = pages.filter((p) => p && !p.missing && p.extract);
+    if (!validPages.length) return null;
+
+    // Ưu tiên trang có khớp chữ hoa/thường chính xác nhất hoặc có mục (Deutsch)
+    const germanPage = validPages.find((p) => /\(Deutsch\)/i.test(p.extract)) || validPages[0];
+    return parseWiktionaryExtract(germanPage.extract, germanPage.title);
+  }
+
+  window.lookupGermanWiktionary = async function (rawInput) {
+    const cleaned = String(rawInput || '')
+      .replace(/^[.,!?;:"„“”'()\[\]«»—–\-]+|[.,!?;:"„“”'()\[\]«»—–\-]+$/g, '')
+      .replace(/^(der|die|das|ein|eine|einen|einem|einer)\s+/i, '')
+      .trim();
+    if (!cleaned || cleaned.includes(' ')) return null;
+
+    const cap = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    const low = cleaned.toLowerCase();
+
+    try {
+      let parsed = await fetchWiktionaryRaw([cleaned, cap, low]);
+      if (!parsed) return null;
+
+      // Nếu là dạng chia động từ / số nhiều (ví dụ: besprachen, Aufgaben), tự động tra tiếp từ gốc (besprechen, Aufgabe)
+      let inflectedNote = '';
+      if (parsed.isInflected && parsed.baseLemma && parsed.baseLemma.toLowerCase() !== low) {
+        inflectedNote = `Biến thể của "${parsed.baseLemma}" (${parsed.grammatischeText || parsed.posLabel})`;
+        const baseParsed = await fetchWiktionaryRaw([parsed.baseLemma]);
+        if (baseParsed && !baseParsed.isInflected) {
+          parsed = {
+            ...baseParsed,
+            matchedSurface: parsed.title,
+            inflectedNote,
+          };
+        }
+      }
+
+      return parsed;
+    } catch (err) {
+      console.warn('Wiktionary API lookup error:', err);
+      return null;
+    }
+  };
+
   window.lookupWordFromReader = async function (rawText, sentenceContext) {
     const cleaned = String(rawText || '')
       .replace(/^[.,!?;:"„“”'()\[\]«»—–\-]+|[.,!?;:"„“”'()\[\]«»—–\-]+$/g, '')
@@ -667,21 +958,16 @@
     const lower = cleaned.toLowerCase();
     const hubList = window.allHubWords || [];
 
-    // 1. Tìm chính xác hoặc theo gốc từ trong 5,243 từ vựng
-    let match =
-      hubList.find((w) => (w.word || '').toLowerCase() === lower) ||
-      hubList.find(
-        (w) =>
-          lower.length >= 4 &&
-          (w.word || '').toLowerCase().startsWith(lower.slice(0, Math.max(4, lower.length - 2)))
-      );
+    // 1. Tìm chính xác trong bộ 5.243 từ vựng sẵn có
+    const match = hubList.find((w) => (w.word || '').toLowerCase() === lower);
 
     if (match) {
       const modalObj = {
         art: match.art || '',
         word: match.word || cleaned,
         level: match.level || 'B1/B2',
-        catVi: `${match.catVi || 'Báo Đức'} • Tin tức`,
+        catVi: `${match.catVi || 'Báo Đức'} • Kho 5.243 từ`,
+        posLabel: match.art ? 'Danh từ' : '',
         en: match.en || '',
         example: sentenceContext || match.example || '',
         exampleEn: match.exampleEn || '',
@@ -702,48 +988,71 @@
       return;
     }
 
-    // 2. Từ mới hoặc cụm từ được bôi đen trực tiếp trên báo Đức -> Dịch tự động & cho phép lưu vào Sổ tay
-    const isPhrase = cleaned.includes(' ');
-    const guessedArt =
-      !isPhrase && /^[A-ZÄÖÜ]/.test(cleaned)
-        ? cleaned.endsWith('ung') || cleaned.endsWith('heit') || cleaned.endsWith('keit') || cleaned.endsWith('schaft') || cleaned.endsWith('tion')
-          ? 'die'
-          : cleaned.endsWith('chen') || cleaned.endsWith('lein') || cleaned.endsWith('ment') || cleaned.endsWith('um')
-          ? 'das'
-          : ''
-        : '';
-
+    // 2. Từ chưa có trong 5.243 từ: Gọi API công khai Wiktionary tiếng Đức + dịch nghĩa Việt
     const tempItem = {
-      art: guessedArt,
+      art: '',
       word: cleaned,
+      grammarBadge: '',
+      ipa: '',
+      posLabel: 'Đang tra Wiktionary...',
+      grammarDetails: '',
       level: activeNewsArticle ? activeNewsArticle.level || 'B1-B2' : 'B1-B2',
-      catVi: activeNewsArticle ? `Báo ${activeNewsArticle.sourceLabel}` : 'Tin tức tiếng Đức',
-      en: 'Đang tra cứu nghĩa tiếng Việt...',
+      catVi: activeNewsArticle ? `Báo ${activeNewsArticle.sourceLabel} • Wiktionary DE` : 'Wiktionary DE',
+      en: 'Đang tra cứu nghĩa & ngữ pháp từ Wiktionary...',
       example: sentenceContext || cleaned,
-      exampleEn: 'Đang dịch câu ngữ cảnh trong bài báo...',
+      exampleEn: sentenceContext ? 'Đang dịch câu ngữ cảnh...' : '',
       isLoading: true,
     };
 
     window.openQuickDictModal(tempItem);
 
-    const [viMeaning, viSentence] = await Promise.all([
+    const isPhrase = cleaned.includes(' ');
+    const [wiktInfo, viDirect, viSentence] = await Promise.all([
+      isPhrase ? Promise.resolve(null) : window.lookupGermanWiktionary(cleaned),
       translateGermanTextToVi(cleaned),
       sentenceContext ? translateGermanTextToVi(sentenceContext) : Promise.resolve(''),
     ]);
+
+    let wiktDefsVi = '';
+    if (wiktInfo && Array.isArray(wiktInfo.definitionsDe) && wiktInfo.definitionsDe.length > 0) {
+      wiktDefsVi = await translateGermanTextToVi(wiktInfo.definitionsDe.slice(0, 2).join(' | '));
+    }
 
     const loadingEl = document.getElementById('modalLoadingState');
     if (loadingEl) loadingEl.style.display = 'none';
 
     tempItem.isLoading = false;
-    tempItem.en = viMeaning || cleaned;
-    tempItem.exampleEn = viSentence || '';
-    currentModalItem = tempItem;
+    if (wiktInfo) {
+      tempItem.art = wiktInfo.art || '';
+      tempItem.word = wiktInfo.title || cleaned;
+      tempItem.grammarBadge = wiktInfo.grammarSummary || '';
+      tempItem.ipa = wiktInfo.ipa ? `IPA: ${wiktInfo.ipa}` : '';
+      tempItem.posLabel = wiktInfo.posLabel || 'Từ vựng tiếng Đức';
 
-    const viEl = document.getElementById('modalDictViMeaning');
-    if (viEl) viEl.innerText = tempItem.en;
-    const senViEl = document.getElementById('modalDictSentenceVi');
-    if (senViEl) senViEl.innerText = tempItem.exampleEn ? `➤ ${tempItem.exampleEn}` : '';
-    syncModalFavButtonState();
+      const detailParts = [];
+      if (wiktInfo.inflectedNote) detailParts.push(wiktInfo.inflectedNote);
+      if (wiktInfo.definitionsDe && wiktInfo.definitionsDe.length > 0) {
+        detailParts.push(`Wiktionary (DE): ${wiktInfo.definitionsDe[0]}`);
+      }
+      tempItem.grammarDetails = detailParts.join(' • ');
+
+      if (!sentenceContext && wiktInfo.examplesDe && wiktInfo.examplesDe.length > 0) {
+        tempItem.example = wiktInfo.examplesDe[0];
+        tempItem.exampleEn = await translateGermanTextToVi(wiktInfo.examplesDe[0]);
+      } else {
+        tempItem.exampleEn = viSentence || '';
+      }
+    } else {
+      tempItem.posLabel = isPhrase ? 'Cụm từ / Thành ngữ' : 'Tra cứu mở rộng';
+      tempItem.exampleEn = viSentence || '';
+    }
+
+    tempItem.en = wiktDefsVi && viDirect && wiktDefsVi.toLowerCase() !== viDirect.toLowerCase()
+      ? `${viDirect} (${wiktDefsVi})`
+      : (viDirect || wiktDefsVi || cleaned);
+
+    currentModalItem = tempItem;
+    window.openQuickDictModal(tempItem);
   };
 
   function setupReaderTextSelectionListener() {
@@ -978,13 +1287,20 @@
     readerContainer.innerHTML = `
       <div style="padding: 48px 20px; text-align: center; color: #7dd3fc;">
         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 1.8rem; margin-bottom: 12px;"></i>
-        <div style="font-size: 0.95rem; font-weight: 600;">Đang trích xuất chế độ đọc sạch (Reader View) từ bài báo gốc...</div>
+        <div style="font-size: 0.95rem; font-weight: 600;">Đang tải toàn bộ nội dung bài báo...</div>
+      </div>
+    `;
+
+    const buildBlockedNoticeHtml = () => `
+      <div style="margin-top: 18px; padding: 12px 16px; border-radius: 12px; background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.32); color: #fde68a; font-size: 0.86rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-circle-info" style="color: #fbbf24; flex-shrink: 0;"></i>
+        <span>Bài báo này giới hạn đọc trực tiếp, bấm nút bên trên để xem toàn văn trên trang gốc</span>
       </div>
     `;
 
     try {
-      const res = await fetch(`/api/news/article?url=${encodeURIComponent(item.link)}`);
-      const article = await res.json();
+      const res = await fetch(`/api/article?url=${encodeURIComponent(item.link)}`);
+      const article = await res.json().catch(() => ({}));
 
       const title = article.title || item.title || '';
       const pubDate = formatRssDate(article.pubDate || item.pubDate);
@@ -992,16 +1308,27 @@
       let paragraphs =
         Array.isArray(article.paragraphs) && article.paragraphs.length > 0
           ? article.paragraphs
-          : Array.isArray(item.fullTextParagraphs)
-          ? item.fullTextParagraphs
           : [];
 
-      if (paragraphs.length === 0) {
-        const rssText = item.rssContent || item.summary || item.description || '';
-        paragraphs = rssText
+      const rssFallbackRaw =
+        (Array.isArray(item.fullTextParagraphs) && item.fullTextParagraphs.length > 0
+          ? item.fullTextParagraphs.join('\n\n')
+          : '') ||
+        item.rssContent ||
+        item.summary ||
+        item.description ||
+        '';
+
+      const isBlockedOrSummaryOnly =
+        !res.ok ||
+        Boolean(article.blocked) ||
+        paragraphs.length === 0;
+
+      if (paragraphs.length === 0 && rssFallbackRaw) {
+        paragraphs = rssFallbackRaw
           .split(/\n+/)
           .map((s) => s.trim())
-          .filter((s) => s.length > 20);
+          .filter((s) => s.length > 15);
       }
 
       activeNewsArticle.extractedParagraphs = paragraphs;
@@ -1038,20 +1365,26 @@
           ${
             paragraphsHtml ||
             `<p style="font-size: 1.08rem; color: #cbd5e1; line-height: 1.75;">${tokenizeGermanParagraph(
-              item.summary || item.description || 'Bấm "Mở bài gốc trên trình duyệt" để xem nội dung chi tiết.'
+              item.summary || item.description || ''
             )}</p>`
           }
         </div>
+        ${isBlockedOrSummaryOnly ? buildBlockedNoticeHtml() : ''}
       `;
     } catch (e) {
-      const fallbackText = item.rssContent || item.description || '';
+      const fallbackText = item.summary || item.rssContent || item.description || '';
       readerContainer.innerHTML = `
         <h2 style="font-size: 1.55rem; font-weight: 800; color: #ffffff; line-height: 1.35; margin: 0 0 16px 0;">
           ${tokenizeGermanParagraph(item.title || '')}
         </h2>
-        <p style="font-size: 1.12rem; line-height: 1.85; color: #e2e8f0; margin-bottom: 18px;">
-          ${tokenizeGermanParagraph(fallbackText)}
-        </p>
+        ${
+          fallbackText
+            ? `<p style="font-size: 1.12rem; line-height: 1.85; color: #e2e8f0; margin-bottom: 18px;">
+                ${tokenizeGermanParagraph(fallbackText)}
+              </p>`
+            : ''
+        }
+        ${buildBlockedNoticeHtml()}
       `;
     }
   };

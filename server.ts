@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
 import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
+import { extractFullArticleContent } from './api/article';
 
 dotenv.config();
 
@@ -296,7 +297,7 @@ function cleanHtmlText(rawHtml: string): string[] {
 async function fetchTagesschauFeed(): Promise<NewsFeedItem[]> {
   try {
     const res = await fetch('https://www.tagesschau.de/xml/rss2/', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DeutschMaster/1.0)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DeutschPrivate/1.0)' },
     });
     const xml = await res.text();
     const $ = cheerio.load(xml, { xmlMode: true });
@@ -347,7 +348,7 @@ async function fetchTagesschauFeed(): Promise<NewsFeedItem[]> {
 async function fetchDwFeed(): Promise<NewsFeedItem[]> {
   try {
     const res = await fetch('https://rss.dw.com/xml/rss-de-all', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DeutschMaster/1.0)' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DeutschPrivate/1.0)' },
     });
     const xml = await res.text();
     const $ = cheerio.load(xml, { xmlMode: true });
@@ -449,99 +450,14 @@ async function fetchNachrichtenleichtFeed(): Promise<NewsFeedItem[]> {
 
 async function extractFullArticle(url: string) {
   const cached = cachedArticlesByUrl.get(url);
-
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
-      },
-    });
-    const html = await res.text();
-    const $ = cheerio.load(html);
-
-    $('script, style, nav, footer, header, aside, form, figure figcaption, .shariff, .social, .meta-box').remove();
-
-    const rawTitle =
-      $('meta[property="og:title"]').attr('content') ||
-      $('h1').first().text().replace(/\s+/g, ' ').trim() ||
-      cached?.title ||
-      'Artikel';
-    const image =
-      $('meta[property="og:image"]').attr('content') ||
-      $('article img').first().attr('src') ||
-      cached?.image ||
-      '';
-    const pubDate =
-      $('meta[property="article:published_time"]').attr('content')?.slice(0, 10) ||
-      $('time').first().text().replace(/\s+/g, ' ').trim() ||
-      cached?.pubDate ||
-      'Hôm nay';
-
-    const paragraphs: string[] = [];
-    const selectors = [
-      'article p.textabsatz',
-      '.b-article-body p',
-      '.article-details-text p',
-      'article p',
-      'main p',
-      '.content p',
-    ];
-
-    for (const sel of selectors) {
-      $(sel).each((_, el) => {
-        const text = $(el).text().replace(/\s+/g, ' ').trim();
-        if (
-          text.length >= 35 &&
-          !text.includes('Cookie') &&
-          !text.includes('Datenschutz') &&
-          !text.includes('JavaScript') &&
-          !paragraphs.includes(text)
-        ) {
-          paragraphs.push(text);
-        }
-      });
-      if (paragraphs.length >= 3) break;
-    }
-
-    if (paragraphs.length === 0 && cached?.fullTextParagraphs?.length) {
-      paragraphs.push(...cached.fullTextParagraphs);
-    }
-
-    return {
-      title: rawTitle,
-      url,
-      pubDate,
-      sourceLabel: cached?.sourceLabel || 'Deutsche Presse',
-      level: cached?.level || 'B1/B2',
-      image,
-      paragraphs:
-        paragraphs.length > 0
-          ? paragraphs
-          : [cached?.summary || 'Nội dung bài báo đã sẵn sàng để đọc trên trang gốc.'],
-    };
-  } catch (err) {
-    if (cached) {
-      return {
-        title: cached.title,
-        url,
-        pubDate: cached.pubDate,
-        sourceLabel: cached.sourceLabel,
-        level: cached.level,
-        image: cached.image,
-        paragraphs: cached.fullTextParagraphs,
-      };
-    }
-    throw err;
-  }
+  return extractFullArticleContent(url, cached);
 }
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json({ limit: '2mb' }));
+  app.use(express.json({ limit: '25mb' }));
 
   // Endpoint 1: Live German News RSS Feed Aggregator
   app.get('/api/news', async (req, res) => {
@@ -576,8 +492,8 @@ async function startServer() {
     }
   });
 
-  // Endpoint 2: Clean Article Extractor (Reader View)
-  app.get('/api/news/article', async (req, res) => {
+  // Endpoint 2: Clean Article Extractor (Vercel-compatible /api/article & /api/news/article alias)
+  const handleArticleExtract = async (req: express.Request, res: express.Response) => {
     try {
       const url = String(req.query.url || '').trim();
       if (!url || !/^https?:\/\//i.test(url)) {
@@ -586,10 +502,16 @@ async function startServer() {
       const article = await extractFullArticle(url);
       return res.json(article);
     } catch (error: any) {
-      console.error('Error in /api/news/article:', error);
-      return res.status(500).json({ error: 'Không thể trích xuất nội dung bài báo.' });
+      console.error('Error in /api/article:', error);
+      return res.status(502).json({
+        error: 'Không thể trích xuất nội dung bài báo.',
+        blocked: true,
+        paragraphs: [],
+      });
     }
-  });
+  };
+  app.get('/api/article', handleArticleExtract);
+  app.get('/api/news/article', handleArticleExtract);
 
   // Endpoint 3: Live YouTube Playlist Sync
   app.get('/api/youtube/playlist', async (req, res) => {
@@ -685,69 +607,100 @@ Nguyên tắc bắt buộc:
 - Nếu có đoạn nội dung không rõ hoặc mơ hồ, đánh dấu rõ là [Không rõ / Cần kiểm tra lại].
 - Nếu trong bài giảng có nhắc lịch thi, kiểm tra, bài tập về nhà, hạn nộp hay lưu ý đặc biệt (Prüfung, Test, Klausur, Hausaufgabe, Termin...), liệt kê ngắn gọn vào mảng examAlerts.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: `Phân tích nội dung bài học dưới đây và trả về JSON theo đúng schema:\n\n${contentBlock}`,
-        config: {
-          systemInstruction,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              examAlerts: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: 'Các lưu ý về thi cử, kiểm tra, bài tập về nhà nếu có trong bài.',
-              },
-              zusammenfassung: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: '3 đến 7 gạch đầu dòng tóm tắt ý chính theo trình tự logic.',
-              },
-              wichtigeInformationen: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    point: {
-                      type: Type.STRING,
-                      description: 'Kiến thức, nguyên tắc, quy trình, số liệu, thời gian, điều kiện hoặc ví dụ quan trọng.',
-                    },
-                    sourceTag: {
-                      type: Type.STRING,
-                      description: 'Ghi rõ "Trong bài giảng" hoặc "Bổ sung".',
-                    },
-                  },
-                  required: ['point', 'sourceTag'],
+      const summarySchema = {
+        type: Type.OBJECT,
+        properties: {
+          examAlerts: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: 'Các lưu ý về thi cử, kiểm tra, bài tập về nhà nếu có trong bài.',
+          },
+          zusammenfassung: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: '3 đến 7 gạch đầu dòng tóm tắt ý chính theo trình tự logic.',
+          },
+          wichtigeInformationen: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                point: {
+                  type: Type.STRING,
+                  description: 'Kiến thức, nguyên tắc, quy trình, số liệu, thời gian, điều kiện hoặc ví dụ quan trọng.',
+                },
+                sourceTag: {
+                  type: Type.STRING,
+                  description: 'Ghi rõ "Trong bài giảng" hoặc "Bổ sung".',
                 },
               },
-              wortschatz: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    term: {
-                      type: Type.STRING,
-                      description: 'Từ vựng / Thuật ngữ gốc (kèm Artikel der/die/das nếu là danh từ).',
-                    },
-                    meaningVi: {
-                      type: Type.STRING,
-                      description: 'Nghĩa tiếng Việt.',
-                    },
-                    note: {
-                      type: Type.STRING,
-                      description: 'Ngữ cảnh / Ghi chú ngắn.',
-                    },
-                  },
-                  required: ['term', 'meaningVi', 'note'],
-                },
-              },
+              required: ['point', 'sourceTag'],
             },
-            required: ['examAlerts', 'zusammenfassung', 'wichtigeInformationen', 'wortschatz'],
+          },
+          wortschatz: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                term: {
+                  type: Type.STRING,
+                  description: 'Từ vựng / Thuật ngữ gốc (kèm Artikel der/die/das nếu là danh từ).',
+                },
+                meaningVi: {
+                  type: Type.STRING,
+                  description: 'Nghĩa tiếng Việt.',
+                },
+                note: {
+                  type: Type.STRING,
+                  description: 'Ngữ cảnh / Ghi chú ngắn.',
+                },
+              },
+              required: ['term', 'meaningVi', 'note'],
+            },
           },
         },
-      });
+        required: ['examAlerts', 'zusammenfassung', 'wichtigeInformationen', 'wortschatz'],
+      };
+
+      const promptContents = `Phân tích nội dung bài học dưới đây và trả về JSON theo đúng schema:\n\n${contentBlock}`;
+      const lectureSummaryModels = ['gemini-3.5-flash-lite-preview', 'gemini-3.5-flash-lite', 'gemini-4-hydrogen'];
+      let response: any = null;
+      let lastSummaryErr: any = null;
+
+      for (const modelName of lectureSummaryModels) {
+        try {
+          const isHydrogen = modelName === 'gemini-4-hydrogen';
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: promptContents,
+            config: isHydrogen
+              ? {
+                  systemInstruction,
+                  thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+                  responseMimeType: 'application/json',
+                  responseSchema: summarySchema,
+                }
+              : {
+                  systemInstruction,
+                  responseMimeType: 'application/json',
+                  responseSchema: summarySchema,
+                },
+          });
+          break;
+        } catch (err: any) {
+          lastSummaryErr = err;
+          const errStatus = err?.status;
+          const msg = String(err?.message || '');
+          if (errStatus === 404 || msg.includes('NOT_FOUND') || msg.includes('not found')) {
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!response) {
+        throw lastSummaryErr || new Error('Không nhận được phản hồi từ mô hình AI.');
+      }
 
       const rawJson = (response.text || '').trim();
       if (!rawJson) {
@@ -810,6 +763,528 @@ Nguyên tắc bắt buộc:
     }
   });
 
+  // Endpoint 4b: Live Context-Aware Lecture Sentence Translation
+  app.post('/api/translate-live', async (req, res) => {
+    try {
+      const sentence = String(req.body?.sentence || '').replace(/\s+/g, ' ').trim();
+      if (!sentence) {
+        return res.status(400).json({ error: 'Thiếu câu tiếng Đức cần dịch.' });
+      }
+
+      const rawContext = Array.isArray(req.body?.contextPrevious) ? req.body.contextPrevious : [];
+      const contextPrevious: string[] = rawContext
+        .map((s: any) => String(s || '').replace(/\s+/g, ' ').trim())
+        .filter((s: string) => s.length > 0)
+        .slice(-3);
+
+      const ai = getGenAI();
+      const systemInstruction =
+        'Bạn là phiên dịch viên bài giảng Đức–Việt trực tiếp trên lớp. ' +
+        'Hãy dịch ĐÚNG MỘT câu tiếng Đức mới sang tiếng Việt tự nhiên, mạch lạc, đúng đại từ, thì và từ nối theo mạch bài giảng dựa trên 2–3 câu tiếng Đức liền trước đó (nếu có). ' +
+        'TUYỆT ĐỐI KHÔNG dịch lại các câu ngữ cảnh trước đó, KHÔNG thêm dấu ngoặc kép bao quanh câu, KHÔNG giải thích hay ghi chú gì thêm. Chỉ trả về đúng 1 câu/đoạn tiếng Việt đã dịch.';
+
+      const userPrompt =
+        contextPrevious.length > 0
+          ? `Ngữ cảnh ${contextPrevious.length} câu tiếng Đức liền trước (chỉ tham khảo mạch văn, KHÔNG dịch lại):\n${contextPrevious
+              .map((c: string, idx: number) => `${idx + 1}. ${c}`)
+              .join('\n')}\n\nCâu tiếng Đức MỚI cần dịch sang tiếng Việt:\n${sentence}`
+          : `Dịch câu tiếng Đức sau sang tiếng Việt tự nhiên (chỉ trả về bản dịch tiếng Việt):\n${sentence}`;
+
+      const candidateModels = ['gemini-3.5-flash-lite-preview', 'gemini-3.5-flash-lite', 'gemini-4-hydrogen'];
+      let response: any = null;
+      let lastErr: any = null;
+
+      for (const modelName of candidateModels) {
+        try {
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: userPrompt,
+            config: {
+              systemInstruction,
+              thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+              temperature: 0.2,
+            },
+          });
+          break;
+        } catch (err: any) {
+          lastErr = err;
+          const msg = String(err?.message || '');
+          if (err?.status === 400 && (msg.includes('thinking') || msg.includes('system_instruction'))) {
+            try {
+              response = await ai.models.generateContent({
+                model: modelName,
+                contents: `${systemInstruction}\n\n${userPrompt}`,
+                config: { temperature: 0.2 },
+              });
+              break;
+            } catch (retryErr: any) {
+              lastErr = retryErr;
+            }
+          }
+          if (err?.status === 404 || msg.includes('NOT_FOUND') || msg.includes('not found')) {
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!response) {
+        throw lastErr || new Error('Không nhận được phản hồi dịch.');
+      }
+
+      const rawTranslation = String(response.text || '')
+        .trim()
+        .replace(/^[“"«]+|[”"»]+$/g, '')
+        .replace(/\s*\n+\s*/g, ' ')
+        .trim();
+
+      if (!rawTranslation) {
+        return res.status(502).json({ error: 'Bản dịch trống.' });
+      }
+
+      return res.json({ translation: rawTranslation });
+    } catch (error: any) {
+      console.error('Error in /api/translate-live:', error);
+      const status = error?.status && error.status >= 400 && error.status < 600 ? error.status : 500;
+      return res.status(status).json({
+        error: error?.message || 'Không thể dịch theo ngữ cảnh lúc này.',
+      });
+    }
+  });
+
+  // Endpoint 4c: Batched Coherent Prose Lecture Translator (Stream 2 - gemini-3.5-flash-lite-preview)
+  app.post('/api/translate-batch', async (req, res) => {
+    try {
+      const rawBatch = Array.isArray(req.body?.batchSentences) ? req.body.batchSentences : [];
+      const batchSentences: string[] = rawBatch
+        .map((s: any) => String(s || '').replace(/\s+/g, ' ').trim())
+        .filter((s: string) => s.length > 0);
+
+      if (batchSentences.length === 0) {
+        return res.status(400).json({ error: 'Thiếu cụm câu tiếng Đức để biên tập.' });
+      }
+
+      const prevViContext = String(req.body?.previousVietnameseContext || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(-450);
+
+      const ai = getGenAI();
+      const systemInstruction =
+        'Bạn là biên tập viên dịch thuật bài giảng tiếng Đức sang tiếng Việt chuyên nghiệp. ' +
+        'Nhiệm vụ: Gộp cụm câu nhận dạng giọng nói tiếng Đức dưới đây thành MỘT đoạn văn xuôi tiếng Việt trôi chảy, tự nhiên, mạch lạc. ' +
+        'Quy tắc bắt buộc:\n' +
+        '1. Tự động loại bỏ từ ngập ngừng/nói lắp (như "ähm", "also...", lặp từ vô nghĩa) và ghép sửa các mẩu câu bị ngắt quãng do micro (ví dụ "also ein.", ", die.") thành ý hoàn chỉnh.\n' +
+        '2. Dịch thống nhất đại từ, thì và thuật ngữ nối tiếp tự nhiên với ngữ cảnh đoạn tiếng Việt liền trước (nếu có), KHÔNG dịch lặp lại ngữ cảnh trước.\n' +
+        '3. Chỉ trả về đúng 1 đoạn văn xuôi tiếng Việt liền mạch: KHÔNG xuống dòng từng câu, KHÔNG đánh số, KHÔNG bọc dấu ngoặc kép ở đầu/cuối, KHÔNG thêm tiêu đề hay giải thích.\n' +
+        '4. Nếu trong cụm có câu giáo viên dặn dò thi cử, kiểm tra, bài tập về nhà hoặc hạn nộp (Prüfung, Test, Klausur, Hausaufgabe, Termin, Abgabe...), giữ nguyên trong đoạn văn xuôi và bọc riêng phần câu nhắc đó bằng thẻ [[EXAM]]...[[/EXAM]].';
+
+      const combinedGerman = batchSentences.join(' ');
+      const userPrompt = prevViContext
+        ? `Đoạn tiếng Việt liền trước (chỉ để nối mạch văn tự nhiên, KHÔNG dịch hay lặp lại):\n${prevViContext}\n\nCụm câu tiếng Đức MỚI cần biên tập thành đoạn văn xuôi tiếng Việt:\n${combinedGerman}`
+        : `Biên tập cụm câu tiếng Đức sau thành 1 đoạn văn xuôi tiếng Việt mạch lạc, tự nhiên:\n${combinedGerman}`;
+
+      const candidateModels = ['gemini-3.5-flash-lite-preview', 'gemini-3.5-flash-lite', 'gemini-4-hydrogen'];
+      let response: any = null;
+      let lastErr: any = null;
+
+      for (const modelName of candidateModels) {
+        try {
+          const isFlashLite = modelName.includes('flash-lite');
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: userPrompt,
+            config: isFlashLite
+              ? {
+                  systemInstruction,
+                  thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+                }
+              : {
+                  systemInstruction,
+                },
+          });
+          break;
+        } catch (err: any) {
+          lastErr = err;
+          const msg = String(err?.message || '');
+          if (err?.status === 400 && (msg.includes('thinking') || msg.includes('system_instruction'))) {
+            try {
+              response = await ai.models.generateContent({
+                model: modelName,
+                contents: `${systemInstruction}\n\n${userPrompt}`,
+              });
+              break;
+            } catch (retryErr: any) {
+              lastErr = retryErr;
+            }
+          }
+          if (err?.status === 404 || msg.includes('NOT_FOUND') || msg.includes('not found')) {
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!response) {
+        throw lastErr || new Error('Không nhận được phản hồi biên tập đoạn văn.');
+      }
+
+      const paragraph = String(response.text || '')
+        .trim()
+        .replace(/^[“"«]+|[”"»]+$/g, '')
+        .replace(/\s*\n+\s*/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      if (!paragraph) {
+        return res.status(502).json({ error: 'Đoạn văn biên tập bị trống.' });
+      }
+
+      return res.json({ paragraph });
+    } catch (error: any) {
+      console.error('Error in /api/translate-batch:', error);
+      const status = error?.status && error.status >= 400 && error.status < 600 ? error.status : 500;
+      return res.status(status).json({
+        error: error?.message || 'Không thể biên tập đoạn văn tiếng Việt lúc này.',
+      });
+    }
+  });
+
+  // Endpoint 4d: Lecture Summary & Key Vocabulary Extraction (LectureTranslatorView.tsx - gemini-3.5-flash-lite-preview)
+  app.post('/api/translate-lecture', async (req, res) => {
+    try {
+      const germanText = String(req.body?.germanText || '').trim();
+      const level = String(req.body?.level || 'B2').trim();
+      if (!germanText) {
+        return res.status(400).json({ error: 'Thiếu nội dung bài giảng tiếng Đức để tóm tắt.' });
+      }
+
+      const ai = getGenAI();
+      const lectureSchema = {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING, description: 'Tiêu đề ngắn gọn của bài giảng bằng tiếng Việt.' },
+          summaryVi: { type: Type.STRING, description: 'Tóm tắt mạch lạc nội dung chính bài giảng bằng tiếng Việt.' },
+          keyVocab: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                word: { type: Type.STRING },
+                article: { type: Type.STRING },
+                plural: { type: Type.STRING },
+                ipa: { type: Type.STRING },
+                meaningVi: { type: Type.STRING },
+                level: { type: Type.STRING },
+                exampleDe: { type: Type.STRING },
+                exampleVi: { type: Type.STRING },
+              },
+              required: ['word', 'meaningVi'],
+            },
+          },
+        },
+        required: ['title', 'summaryVi', 'keyVocab'],
+      };
+
+      const candidateModels = ['gemini-3.5-flash-lite-preview', 'gemini-3.5-flash-lite', 'gemini-4-hydrogen'];
+      let response: any = null;
+      let lastErr: any = null;
+
+      for (const modelName of candidateModels) {
+        try {
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: `Trình độ mục tiêu: ${level}\n\nNội dung bài giảng tiếng Đức:\n${germanText}`,
+            config: {
+              systemInstruction:
+                'Bạn là trợ lý học tiếng Đức SLA. Hãy tóm tắt bài giảng tiếng Đức bằng tiếng Việt súc tích và trích xuất 5–10 từ vựng/thuật ngữ quan trọng nhất kèm mạo từ (der/die/das nếu là danh từ), nghĩa tiếng Việt và câu ví dụ.',
+              responseMimeType: 'application/json',
+              responseSchema: lectureSchema,
+            },
+          });
+          break;
+        } catch (err: any) {
+          lastErr = err;
+          const msg = String(err?.message || '');
+          if (err?.status === 404 || msg.includes('NOT_FOUND') || msg.includes('not found')) {
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!response) {
+        throw lastErr || new Error('Không nhận được phản hồi tóm tắt bài giảng.');
+      }
+
+      const parsed = JSON.parse(String(response.text || '{}').trim());
+      return res.json(parsed);
+    } catch (error: any) {
+      console.error('Error in /api/translate-lecture:', error);
+      const status = error?.status && error.status >= 400 && error.status < 600 ? error.status : 500;
+      return res.status(status).json({
+        error: error?.message || 'Không thể tóm tắt bài học lúc này.',
+      });
+    }
+  });
+
+  // Endpoint 5: Audio Transcription Fallback for Mobile Browsers via Gemini 3.5 Transcribe
+  app.post('/api/transcribe-audio', async (req, res) => {
+    try {
+      const audioBase64 = typeof req.body?.audioBase64 === 'string' ? req.body.audioBase64.trim() : '';
+      const rawMime = typeof req.body?.mimeType === 'string' ? req.body.mimeType.trim() : 'audio/webm';
+      const mimeType = rawMime.split(';')[0].trim() || 'audio/webm';
+
+      if (!audioBase64) {
+        return res.status(400).json({ error: 'Thiếu dữ liệu âm thanh để phiên âm.' });
+      }
+
+      const ai = getGenAI();
+      const audioPart = {
+        inlineData: {
+          mimeType,
+          data: audioBase64,
+        },
+      };
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.5-transcribe',
+        contents: {
+          parts: [
+            audioPart,
+            {
+              text: 'Transcribe the spoken German audio accurately into clean German sentences. Return only the transcribed German text without timestamps, notes, or explanations.',
+            },
+          ],
+        },
+      });
+
+      const transcript = (response.text || '').trim();
+      return res.json({ transcript });
+    } catch (error: any) {
+      console.error('Error in /api/transcribe-audio:', error);
+      const status = error?.status && error.status >= 400 && error.status < 600 ? error.status : 500;
+      return res.status(status).json({
+        error: error?.message || 'Không thể phiên âm đoạn ghi âm lúc này.',
+      });
+    }
+  });
+
+  // Endpoint 5b: Groq Whisper (whisper-large-v3-turbo) Server Fallback if VITE_GROQ_API_KEY is mounted only at server runtime
+  app.post('/api/groq-transcribe', async (req, res) => {
+    try {
+      const groqKey = (process.env.VITE_GROQ_API_KEY || process.env.GROQ_API_KEY || '')
+        .trim()
+        .replace(/^["']|["']$/g, '')
+        .trim();
+      if (!groqKey) {
+        return res.status(400).json({ error: 'Chưa cấu hình VITE_GROQ_API_KEY trong mục Secrets.' });
+      }
+
+      const audioBase64 = typeof req.body?.audioBase64 === 'string' ? req.body.audioBase64.trim() : '';
+      const rawMime = typeof req.body?.mimeType === 'string' ? req.body.mimeType.trim() : 'audio/webm';
+      const mimeType = rawMime.split(';')[0].trim() || 'audio/webm';
+      const ext = mimeType.includes('mp4') ? 'm4a' : 'webm';
+
+      if (!audioBase64) {
+        return res.status(400).json({ error: 'Thiếu dữ liệu âm thanh để gửi tới Groq Whisper.' });
+      }
+
+      const audioBuffer = Buffer.from(audioBase64, 'base64');
+      const audioBlob = new Blob([audioBuffer], { type: mimeType });
+      const formData = new FormData();
+      formData.append('file', audioBlob, `lecture.${ext}`);
+      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('language', 'de');
+      formData.append('response_format', 'json');
+
+      const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${groqKey}`,
+        },
+        body: formData,
+      });
+
+      const groqData: any = await groqRes.json().catch(() => ({}));
+      if (!groqRes.ok) {
+        return res.status(groqRes.status).json({
+          error: groqData?.error?.message || `Groq Whisper lỗi (${groqRes.status})`,
+        });
+      }
+
+      return res.json({ text: String(groqData?.text || '').trim() });
+    } catch (error: any) {
+      console.error('Error in /api/groq-transcribe:', error);
+      return res.status(500).json({
+        error: error?.message || 'Không thể kết nối Groq Whisper.',
+      });
+    }
+  });
+
+  // Endpoint 6: Multi-Turn German Tutor & Practice Chatbot (Gemini 3.1 Flash Lite Preview via @google/genai)
+  app.post('/api/chat', async (req, res) => {
+    try {
+      const { messages, roleKey, customInstructions } = req.body || {};
+      if (!Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: 'Vui lòng nhập tin nhắn để bắt đầu trò chuyện.' });
+      }
+
+      const roleInstructions: Record<string, string> = {
+        tutor:
+          'Bạn là Gia sư Tiếng Đức SLA của DeutschPrivate dành cho học viên Việt Nam (A2–C1). Giải thích ngữ pháp, mạo từ der/die/das, trật tự từ và từ vựng bằng tiếng Việt rõ ràng, súc tích, kèm ví dụ tiếng Đức chuẩn xác và bản dịch tiếng Việt.',
+        partner:
+          'Du bist ein freundlicher deutscher Gesprächspartner für Lernende auf Niveau B1–B2. Antworte überwiegend auf natürlichem Alltagsdeutsch in kurzen, klaren Sätzen und stelle am Ende eine passende Rückfrage. Wenn der Lernende einen Fehler macht, füge am Ende in Klammern eine kurze, höfliche Korrektur auf Vietnamesisch hinzu.',
+        exam:
+          'Bạn là Huấn luyện viên luyện thi Goethe-Zertifikat & telc (B1–C1). Hỗ trợ học viên luyện Schreiben và Sprechen bằng các mẫu câu Redemittel chuẩn kỳ thi, sửa lỗi câu chi tiết và chấm điểm theo tiêu chí ngữ pháp - từ vựng - mạch lạc.',
+      };
+
+      const baseInstruction = roleInstructions[String(roleKey || 'tutor')] || roleInstructions.tutor;
+      const cleanCustomRules = Array.isArray(customInstructions)
+        ? customInstructions
+            .map((r: any) => String(r || '').trim())
+            .filter((r: string) => r.length > 0)
+            .slice(0, 30)
+        : [];
+
+      const fullSystemInstruction =
+        cleanCustomRules.length > 0
+          ? `${baseInstruction}\n\nChỉ dẫn bổ sung từ người dùng (Bắt buộc tuân thủ):\n${cleanCustomRules
+              .map((r, i) => `${i + 1}. ${r}`)
+              .join('\n')}`
+          : baseInstruction;
+
+      const candidateModels = ['gemini-3.1-flash-lite-preview', 'gemini-3.1-flash-lite', 'gemini-4-hydrogen'];
+      let activeModel = candidateModels[0];
+
+      const sanitized = messages
+        .map((m: any) => ({
+          role: m?.role === 'model' ? 'model' : 'user',
+          text: String(m?.text || '').trim(),
+        }))
+        .filter((m) => m.text.length > 0);
+
+      // Sliding window: keep only the 10 most recent messages to stay well within token limits
+      const recentWindow = sanitized.slice(-10);
+
+      // Normalize consecutive same-role turns so history always alternates cleanly
+      const normalizedWindow: Array<{ role: 'user' | 'model'; text: string }> = [];
+      for (const item of recentWindow) {
+        const last = normalizedWindow[normalizedWindow.length - 1];
+        if (last && last.role === item.role) {
+          last.text = `${last.text}\n${item.text}`;
+        } else {
+          normalizedWindow.push({ role: item.role as 'user' | 'model', text: item.text });
+        }
+      }
+
+      const latestMsg = normalizedWindow[normalizedWindow.length - 1];
+      if (!latestMsg || latestMsg.role !== 'user') {
+        return res.status(400).json({ error: 'Tin nhắn cuối cùng phải từ người dùng.' });
+      }
+
+      let priorTurns = normalizedWindow.slice(0, -1);
+      while (priorTurns.length > 0 && priorTurns[0].role !== 'user') {
+        priorTurns = priorTurns.slice(1);
+      }
+
+      const history = priorTurns.map((m) => ({
+        role: m.role,
+        parts: [{ text: m.text }],
+      }));
+
+      const ai = getGenAI();
+      const invokeGeminiChat = async (modelName: string) => {
+        try {
+          const chat = ai.chats.create({
+            model: modelName,
+            history,
+            config: {
+              systemInstruction: fullSystemInstruction,
+            },
+          });
+          return await chat.sendMessage({
+            message: latestMsg.text,
+          });
+        } catch (innerErr: any) {
+          const msg = String(innerErr?.message || '');
+          if (
+            innerErr?.status === 400 &&
+            (msg.includes('Developer instruction') || msg.includes('system_instruction'))
+          ) {
+            const prefix = `[System Instruction]\n${fullSystemInstruction}\n\n[User Message]\n`;
+            const wrappedHistory =
+              history.length > 0
+                ? [
+                    {
+                      role: 'user' as const,
+                      parts: [{ text: prefix + history[0].parts[0].text }],
+                    },
+                    ...history.slice(1),
+                  ]
+                : [];
+            const messageToSend = history.length === 0 ? prefix + latestMsg.text : latestMsg.text;
+            const chat = ai.chats.create({
+              model: modelName,
+              history: wrappedHistory,
+            });
+            return await chat.sendMessage({ message: messageToSend });
+          }
+          throw innerErr;
+        }
+      };
+
+      let response;
+      const retryDelays = [700, 1400];
+      for (const modelName of candidateModels) {
+        activeModel = modelName;
+        let notFound = false;
+        for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
+          try {
+            response = await invokeGeminiChat(modelName);
+            break;
+          } catch (err: any) {
+            const code = err?.status;
+            if (code === 404) {
+              notFound = true;
+              break;
+            }
+            const isTransient = code === 503 || String(err?.message || '').includes('UNAVAILABLE');
+            if (isTransient && attempt < retryDelays.length) {
+              await new Promise((r) => setTimeout(r, retryDelays[attempt]));
+              continue;
+            }
+            throw err;
+          }
+        }
+        if (response || !notFound) break;
+      }
+
+      const reply = (response?.text || '').trim();
+      if (!reply) {
+        return res.status(502).json({ error: 'Mô hình AI không trả về nội dung.' });
+      }
+
+      return res.json({ reply, model: activeModel });
+    } catch (error: any) {
+      console.error('Error in /api/chat:', error);
+      const status = error?.status && error.status >= 400 && error.status < 600 ? error.status : 500;
+      let cleanMsg = String(error?.message || 'Không thể kết nối Trợ lý AI lúc này.');
+      if (cleanMsg.startsWith('{')) {
+        try {
+          const parsedErr = JSON.parse(cleanMsg);
+          cleanMsg = parsedErr?.error?.message || cleanMsg;
+        } catch {}
+      }
+      return res.status(status).json({
+        error:
+          status === 503
+            ? 'Mô hình AI hiện đang quá tải tạm thời. Vui lòng thử gửi lại sau vài giây.'
+            : cleanMsg,
+      });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -825,7 +1300,7 @@ Nguyên tắc bắt buộc:
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`DeutschMaster server listening on http://localhost:${PORT}`);
+    console.log(`DeutschPrivate server listening on http://localhost:${PORT}`);
   });
 }
 

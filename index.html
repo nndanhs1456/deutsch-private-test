@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DeutschMaster • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức</title>
+  <title>DeutschPrivate • Phương Pháp Tiếp Thu Tự Nhiên & Thực Tế Tại Đức</title>
   
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="manifest" href="./manifest.json">
@@ -635,6 +635,156 @@
         line-height: 1.7 !important;
       }
     }
+
+    /* Focus Mode cho màn hình đọc báo */
+    body.news-focus-mode .sidebar,
+    body.news-focus-mode .sidebar-overlay,
+    body.news-focus-mode .mobile-header-bar,
+    body.news-focus-mode .top-bar,
+    body.news-focus-mode #tab-reading > .liquid-glass:first-child,
+    body.news-focus-mode .live-news-sidebar {
+      display: none !important;
+    }
+    body.news-focus-mode .app-viewport,
+    body.news-focus-mode .app-viewport.sidebar-collapsed {
+      display: block !important;
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+    body.news-focus-mode .main-stage {
+      padding: 28px 24px 5rem !important;
+    }
+    body.news-focus-mode .live-news-grid {
+      justify-content: center !important;
+    }
+    body.news-focus-mode .live-news-reader {
+      flex: 0 1 860px !important;
+      max-width: 860px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+      padding: 34px 40px 5rem !important;
+      background: rgba(10, 15, 30, 0.85) !important;
+      border-color: rgba(16, 185, 129, 0.32) !important;
+    }
+    body.news-focus-mode #liveNewsReaderBody h2 {
+      font-size: 2.05rem !important;
+      line-height: 1.4 !important;
+      margin-bottom: 22px !important;
+    }
+    body.news-focus-mode #liveNewsReaderBody p,
+    body.news-focus-mode #liveNewsReaderBody .reader-article-paragraphs p {
+      font-size: 1.35rem !important;
+      line-height: 2.15 !important;
+      letter-spacing: 0.015em !important;
+      margin-bottom: 24px !important;
+      color: #f1f5f9 !important;
+    }
+    @media (max-width: 640px) {
+      body.news-focus-mode .main-stage {
+        padding: 14px 10px 4rem !important;
+      }
+      body.news-focus-mode .live-news-reader {
+        padding: 20px 18px 4rem !important;
+      }
+      body.news-focus-mode #liveNewsReaderBody h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.38 !important;
+      }
+      body.news-focus-mode #liveNewsReaderBody p,
+      body.news-focus-mode #liveNewsReaderBody .reader-article-paragraphs p {
+        font-size: 1.18rem !important;
+        line-height: 1.98 !important;
+      }
+    }
+
+    /* FLOATING KI-TUTOR WIDGET (BOTTOM-RIGHT) */
+    .dm-ai-floating-root {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 35;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", sans-serif;
+    }
+    .dm-ai-popup {
+      display: none;
+      flex-direction: column;
+      width: 420px;
+      max-width: calc(100vw - 28px);
+      height: 560px;
+      max-height: calc(100vh - 108px);
+      margin-bottom: 12px;
+      border-radius: 22px;
+      background: rgba(11, 17, 32, 0.97);
+      backdrop-filter: blur(26px);
+      -webkit-backdrop-filter: blur(26px);
+      border: 1px solid rgba(52, 211, 153, 0.34);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+      overflow: hidden;
+      animation: dmAiSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dm-ai-popup.open {
+      display: flex;
+    }
+    @keyframes dmAiSlideUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .dm-ai-fab {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #0284c7);
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.38), 0 4px 16px rgba(0, 0, 0, 0.6);
+      color: #ffffff;
+      font-size: 1.28rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    }
+    .dm-ai-fab:hover {
+      transform: scale(1.07);
+      box-shadow: 0 16px 36px rgba(16, 185, 129, 0.5), 0 6px 20px rgba(0, 0, 0, 0.7);
+    }
+    .dm-ai-fab.is-open {
+      background: rgba(15, 23, 42, 0.94);
+      border-color: rgba(52, 211, 153, 0.75);
+    }
+    .dm-ai-fab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 21px;
+      height: 21px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #34d399;
+      font-size: 0.62rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #10b981;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+    @media (max-width: 600px) {
+      .dm-ai-floating-root {
+        right: 14px;
+        bottom: 16px;
+      }
+      .dm-ai-popup {
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
+        height: min(520px, calc(100vh - 100px));
+        max-height: calc(100vh - 100px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -655,7 +805,7 @@
       <button class="hamburger-btn" onclick="openMobileDrawer()" title="Mở danh mục menu">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em;">DeutschMaster</div>
+      <div style="font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em;">DeutschPrivate</div>
     </div>
     <button class="hamburger-btn" style="width: 38px; height: 38px; font-size: 1rem;" onclick="switchTab('live-trans')" title="Mở nhanh Dịch Trên Lớp">
       <i class="fa-solid fa-microphone" style="color: #f43f5e;"></i>
@@ -671,7 +821,7 @@
         <div class="brand-pill" style="margin-bottom: 0;">
           <div class="flag-bubble"></div>
           <div>
-            <div class="brand-title">DeutschMaster</div>
+            <div class="brand-title">DeutschPrivate</div>
             <div class="brand-sub">SLA Natural Learning</div>
           </div>
         </div>
@@ -701,16 +851,7 @@
           <span>Hörverstehen (3 Lần Nghe)</span>
         </div>
 
-        <!-- 3. Shadowing: Nhại giọng bản ngữ -->
-        <div class="nav-item" onclick="switchTab('shadowing')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="12" y1="19" x2="12" y2="23"></line>
-            <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-          <span>Shadowing (Aussprache)</span>
-        </div>
+
 
         <!-- 4. Reading: Phương pháp 2 lần đọc -->
         <div class="nav-item" onclick="switchTab('reading')">
@@ -925,43 +1066,57 @@
       <div id="tab-live-trans" class="tab-view active">
         
         <div class="liquid-glass" style="padding: 26px; margin-bottom: 22px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(244, 63, 94, 0.2); color: #f43f5e; display: grid; place-items: center; font-size: 1.3rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(244, 63, 94, 0.2); color: #f43f5e; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0;">
                 <i class="fa-solid fa-chalkboard-user"></i>
               </div>
-              <div>
+              <div style="min-width: 0;">
                 <h3 style="font-size: 1.2rem; font-weight: 800;">Chế Độ Dịch Trên Lớp Trực Tiếp</h3>
                 <p style="font-size: 0.82rem; color: var(--text-muted);">Mở mic để máy tự động nghe giáo viên giảng tiếng Đức và dịch ngay sang tiếng Việt.</p>
               </div>
             </div>
 
-            <div id="micStatusPill" style="display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); font-size: 0.8rem; color: #94a3b8;">
-              <span id="micLed" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b;"></span>
-              <span id="micStatusText">Chưa kích hoạt</span>
+            <!-- Góc trên bên phải: Trạng thái mic + 2 biểu tượng nhỏ Lưu (.txt) & Xóa -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+              <div id="micStatusPill" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; color: #94a3b8;">
+                <span id="micLed" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b;"></span>
+                <span id="micStatusText">Chưa kích hoạt</span>
+              </div>
+              <button type="button" onclick="exportLectureNotes()" title="Lưu ghi chép (.txt)" aria-label="Lưu ghi chép (.txt)" style="width: 34px; height: 34px; border-radius: 11px; border: 1px solid rgba(56, 189, 248, 0.28); background: rgba(56, 189, 248, 0.12); color: #7dd3fc; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">
+                <i class="fa-solid fa-file-arrow-down"></i>
+              </button>
+              <button type="button" onclick="openConfirmClearLiveModal()" title="Xóa bảng dịch" aria-label="Xóa bảng dịch" style="width: 34px; height: 34px; border-radius: 11px; border: 1px solid rgba(248, 113, 113, 0.28); background: rgba(239, 68, 68, 0.12); color: #fca5a5; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           </div>
 
-          <!-- Nút điều khiển chính -->
-          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: rgba(0,0,0,0.3); padding: 14px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">
-            <button class="deck-btn btn-primary-ios" id="btnToggleRec" onclick="toggleClassroomListen()" style="padding: 12px 26px; background: linear-gradient(135deg, #e11d48, #f43f5e);">
-              <i class="fa-solid fa-microphone" id="recMicIcon"></i> <span id="recBtnText">Bắt đầu lắng nghe bài giảng</span>
+          <!-- Thanh 3 nút điều khiển chính trên cùng 1 hàng ngang -->
+          <div style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; align-items: center; background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); scrollbar-width: none;">
+            <button type="button" class="deck-btn btn-primary-ios" id="btnToggleRec" onclick="toggleClassroomListen()" style="flex: 1 1 0; min-width: max-content; justify-content: center; white-space: nowrap; padding: 11px 18px; background: linear-gradient(135deg, #e11d48, #f43f5e); display: inline-flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-microphone" id="recMicIcon"></i>
+              <span id="recBtnText">Bắt đầu lắng nghe bài giảng</span>
+              <span id="recDurationTimer" style="font-variant-numeric: tabular-nums; font-size: 0.78rem; font-weight: 800; padding: 2px 8px; border-radius: 8px; background: rgba(0,0,0,0.28); color: #fff; border: 1px solid rgba(255,255,255,0.18);">00:00</span>
             </button>
 
-            <button class="deck-btn btn-glass-subtle" onclick="simulateTeacherLecture()" title="Mô phỏng giáo viên giảng tiếng Đức">
-              <i class="fa-solid fa-vial" style="color: #38bdf8;"></i> Test lời giảng mẫu
+            <button type="button" class="deck-btn btn-glass-subtle" onclick="openPasteLectureModal()" style="flex: 0 0 auto; white-space: nowrap; padding: 11px 18px; display: inline-flex; align-items: center; gap: 8px; border-color: rgba(56, 189, 248, 0.3); color: #e0f2fe;" title="Mở ô dán nhanh văn bản hoặc dán trực tiếp từ Clipboard">
+              <i class="fa-solid fa-paste" style="color: #38bdf8;"></i>
+              <span>Dán văn bản</span>
             </button>
 
-            <button class="deck-btn btn-glass-subtle" onclick="clearLiveTransHistory()">
-              <i class="fa-solid fa-trash-can"></i> Xóa bảng dịch
+            <button type="button" class="deck-btn btn-primary-ios" onclick="generateLectureSummary()" style="flex: 1 1 0; min-width: max-content; justify-content: center; white-space: nowrap; padding: 11px 18px; background: linear-gradient(135deg, #10b981, #059669); display: inline-flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>Kết thúc & Tóm tắt bài học</span>
             </button>
+          </div>
 
-            <button class="deck-btn btn-glass-subtle" onclick="exportLectureNotes()">
-              <i class="fa-solid fa-file-arrow-down"></i> Lưu ghi chép (.txt)
-            </button>
-
-            <button class="deck-btn btn-primary-ios" onclick="generateLectureSummary()" style="background: linear-gradient(135deg, #10b981, #059669);">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Kết thúc & Tóm tắt bài học
+          <!-- Thông báo lỗi / trạng thái quyền Micro rõ ràng cho Mobile & Desktop -->
+          <div id="micPermissionAlert" style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 14px; background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.42); color: #fecdd3; font-size: 0.88rem; line-height: 1.5; align-items: flex-start; gap: 10px;">
+            <i class="fa-solid fa-circle-exclamation" style="color: #f87171; margin-top: 3px; flex-shrink: 0;"></i>
+            <div id="micPermissionAlertText" style="flex: 1;"></div>
+            <button onclick="document.getElementById('micPermissionAlert').style.display='none'" style="background: transparent; border: none; color: #fca5a5; cursor: pointer; font-size: 1rem; padding: 0 4px;" title="Đóng thông báo">
+              <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
 
@@ -1079,7 +1234,7 @@
 
             <!-- Văn bản tiếng Việt nối tiếp liên tục như tài liệu -->
             <div id="vietnameseArticleBox" style="min-height: 220px; max-height: 520px; overflow-y: auto; padding: 18px 22px; background: rgba(0, 0, 0, 0.35); border-radius: 18px; border: 1px solid rgba(255,255,255,0.06); font-size: 1.05rem; line-height: 1.85; color: #f1f5f9; scrollbar-width: thin;">
-              <p style="color: #64748b; font-style: italic;">
+              <p class="vi-empty-placeholder" style="color: #64748b; font-style: italic;">
                 Chưa có nội dung. Khi giáo viên nói tiếng Đức, toàn bộ bản dịch tiếng Việt sẽ tự động nối tiếp liên tục thành từng đoạn văn mạch lạc ở đây để bạn dễ dàng cuộn lướt theo dõi bài giảng...
               </p>
             </div>
@@ -1236,39 +1391,7 @@
       <!-- ======================================================== -->
       
 
-      <!-- ======================================================== -->
-      <!-- TAB 4: SHADOWING (LUYỆN NGỮ ĐIỆU & PHÁT ÂM) -->
-      <!-- ======================================================== -->
-      <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
-      <!-- ======================================================== -->
-      
 
-      <!-- ======================================================== -->
-      <div id="tab-shadowing" class="tab-view">
-        <div class="liquid-glass" style="padding: 24px; margin-bottom: 20px;">
-          <h3 style="font-size: 1.2rem; color: #a855f7; margin-bottom: 8px;">
-            <i class="fa-solid fa-microphone-lines"></i> Shadowing Studio (20–40 giây)
-          </h3>
-          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
-            Nghe và nhắc lại gần như đồng thời với người nói (trễ 0.5s). Đừng chỉ đọc đúng từ, hãy bắt chước cách người Đức thực sự nuốt âm và nhấn trọng âm!
-          </p>
-
-          <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 18px; border-left: 4px solid #a855f7; margin-bottom: 18px;">
-            <p id="shadowText" style="font-size: 1.15rem; line-height: 1.8; color: #fff; font-weight: 500;">
-              "In Anbetracht der aktuellen Lage lässt sich feststellen, dass die Digitalisierung nicht nur Chancen bietet, sondern auch enorme Herausforderungen für kleine Unternehmen mit sich bringt."
-            </p>
-          </div>
-
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <button class="deck-btn btn-primary-ios" onclick="playCurrentShadow()">
-              <i class="fa-solid fa-play"></i> Nghe & Nói theo
-            </button>
-            <button class="deck-btn btn-glass-subtle" onclick="nextShadowSnippet()">
-              Đoạn tiếp theo <i class="fa-solid fa-forward"></i>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- ======================================================== -->
       <!-- TAB READING & BÁO MANGA ĐỨC MỞ TRỰC TIẾP TRONG APP -->
@@ -1354,6 +1477,9 @@
               </div>
 
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button id="btnReaderFocusMode" class="deck-btn btn-glass-subtle" onclick="window.toggleNewsFocusMode()" style="padding: 8px 14px; font-size: 0.82rem;" title="Ẩn thanh bên và phóng lớn chữ để tập trung đọc">
+                  <i class="fa-solid fa-expand"></i> Focus Mode
+                </button>
                 <button class="deck-btn btn-glass-subtle" onclick="window.readAloudActiveNewsArticle()" style="padding: 8px 14px; font-size: 0.82rem;">
                   <i class="fa-solid fa-volume-high"></i> Nghe đọc bài
                 </button>
@@ -1681,7 +1807,7 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- TAB 9: KHO TỪ VỰNG & CỤM TỪ YÊU THÍCH (FAVORITES) -->
+      <!-- TAB 10: KHO TỪ VỰNG & CỤM TỪ YÊU THÍCH (FAVORITES) -->
       <!-- ======================================================== -->
       <div id="tab-favorites" class="tab-view">
         <div class="liquid-glass" style="padding: 24px;">
@@ -1877,9 +2003,173 @@
     }
   </style>
 
+  <!-- BONG BÓNG CHAT NỔI KI-TUTOR (BOTTOM-RIGHT, MỞ NHANH TRÊN MỌI TAB) -->
+  <div id="dmAiFloatingRoot" class="dm-ai-floating-root">
+    <!-- Popup Drawer mở phía trên nút tròn -->
+    <div id="dmAiPopup" class="dm-ai-popup" role="dialog" aria-label="KI-Tutor Trợ lý AI">
+      <!-- Header thu gọn -->
+      <div style="padding: 12px 14px 10px; background: #131b2e; border-bottom: 1px solid rgba(255,255,255,0.09);">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 9px;">
+          <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+            <span style="width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg, #10b981, #0284c7); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 0.82rem; flex-shrink: 0;">
+              <i class="fa-solid fa-robot"></i>
+            </span>
+            <div style="min-width: 0;">
+              <div style="font-size: 0.92rem; font-weight: 800; color: #f8fafc; line-height: 1.2;">KI-Tutor AI</div>
+              <div style="font-size: 0.68rem; color: #7dd3fc; font-weight: 600;">gemini-3.1-flash-lite-preview · 10 tin</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+            <button id="btnOpenAiInstructions" type="button" onclick="window.openAiInstructionsModal()" class="deck-btn btn-glass-subtle" style="padding: 5px 9px; font-size: 0.74rem; border-radius: 9px; border-color: rgba(56, 189, 248, 0.35); color: #7dd3fc;" title="Quản lý Chỉ dẫn cho AI">
+              <i class="fa-solid fa-sliders"></i> Chỉ dẫn <span id="aiInstructionsBadge" style="font-size: 0.68rem; opacity: 0.9;"></span>
+            </button>
+            <button type="button" onclick="window.resetAiChatWithRole()" class="deck-btn btn-glass-subtle" style="padding: 5px 9px; font-size: 0.74rem; border-radius: 9px;" title="Cuộc trò chuyện mới">
+              <i class="fa-solid fa-rotate-left"></i> Mới
+            </button>
+            <button type="button" onclick="window.toggleAiChatPopup(false)" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;" title="Thu gọn khung chat">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <select id="aiChatRoleSelect" onchange="window.resetAiChatWithRole()" style="width: 100%; padding: 7px 10px; border-radius: 10px; background: rgba(6, 10, 22, 0.75); border: 1px solid rgba(255,255,255,0.14); color: #e2e8f0; font-size: 0.8rem; outline: none;">
+          <option value="tutor">Vai trò: Gia sư Tiếng Đức SLA</option>
+          <option value="partner">Vai trò: Bạn Hội Thoại Bản Ngữ (B1–B2)</option>
+          <option value="exam">Vai trò: Luyện thi Goethe / telc</option>
+        </select>
+      </div>
+
+      <!-- Luồng tin nhắn cuộn dọc -->
+      <div id="aiChatThread" style="flex: 1; overflow-y: auto; padding: 13px; background: rgba(6, 10, 22, 0.65); display: flex; flex-direction: column; gap: 10px;">
+      </div>
+
+      <!-- Form nhập câu hỏi -->
+      <div style="padding: 10px 12px; background: #101626; border-top: 1px solid rgba(255,255,255,0.09); display: flex; gap: 8px; align-items: center;">
+        <input type="text" id="aiChatInput" placeholder="Hỏi ngữ pháp hoặc luyện nói tiếng Đức..." onkeyup="if(event.key==='Enter') window.sendAiChatMessage()" style="flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.16); color: #fff; font-size: 0.86rem; outline: none;" />
+        <button id="btnSendAiChat" type="button" class="deck-btn btn-primary-ios" onclick="window.sendAiChatMessage()" style="padding: 10px 14px; font-size: 0.84rem; border-radius: 12px; flex-shrink: 0;">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Nút tròn mở nhanh Trợ lý AI ở góc dưới bên phải -->
+    <button id="dmAiFab" type="button" class="dm-ai-fab" onclick="window.toggleAiChatPopup()" title="Mở nhanh Gia sư AI (KI-Tutor)">
+      <i class="fa-solid fa-comments" id="dmAiFabIcon"></i>
+      <span class="dm-ai-fab-badge" id="dmAiFabBadge">AI</span>
+    </button>
+  </div>
+
+  <!-- MODAL QUẢN LÝ "CHỈ DẪN CHO AI" -->
+  <div id="aiInstructionsModalOverlay" onclick="if(event.target===this) window.closeAiInstructionsModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10020; justify-content: center; align-items: center; padding: 16px;">
+    <div class="liquid-glass" style="width: 100%; max-width: 560px; max-height: 88vh; display: flex; flex-direction: column; background: linear-gradient(145deg, rgba(11, 17, 32, 0.98), rgba(15, 23, 42, 0.97)); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 22px; padding: 22px; box-shadow: 0 28px 65px rgba(0,0,0,0.75);">
+      <!-- Thanh tiêu đề: Chữ "Chỉ dẫn cho AI" + Công tắc Bật/Tắt ở góc phải -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.09); margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-wand-magic-sparkles" style="color: #38bdf8; font-size: 1.05rem;"></i>
+          <h4 style="font-size: 1.12rem; font-weight: 800; color: #fff; margin: 0;">Chỉ dẫn cho AI</h4>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <span id="aiInstructionsToggleLabel" style="font-size: 0.8rem; font-weight: 700; color: #34d399;">Đang bật</span>
+            <button type="button" id="aiInstructionsToggleBtn" role="switch" aria-checked="true" onclick="window.toggleAiInstructionsEnabled()" style="position: relative; width: 46px; height: 26px; border-radius: 999px; border: none; background: #10b981; cursor: pointer; transition: background 0.2s ease; padding: 0;">
+              <span id="aiInstructionsToggleKnob" style="position: absolute; top: 3px; left: 23px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.35); transition: left 0.2s ease;"></span>
+            </button>
+          </label>
+          <button type="button" onclick="window.closeAiInstructionsModal()" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; display: grid; place-items: center;" title="Đóng">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thanh công cụ: Nút + Thêm màu xanh bên trái và Xóa tất cả bên phải -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px;">
+        <button type="button" onclick="window.openAddAiInstructionForm()" class="deck-btn btn-primary-ios" style="padding: 8px 16px; font-size: 0.84rem; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #3b82f6); box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);">
+          <i class="fa-solid fa-plus"></i> Thêm
+        </button>
+        <button type="button" onclick="window.clearAllAiInstructions()" class="deck-btn btn-glass-subtle" style="padding: 8px 14px; font-size: 0.82rem; border-radius: 12px; color: #f87171; border-color: rgba(248, 113, 113, 0.3);">
+          <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+        </button>
+      </div>
+
+      <!-- Form Thêm mới chỉ dẫn (ẩn mặc định, mở khi bấm + Thêm) -->
+      <div id="aiInstructionAddBox" style="display: none; margin-bottom: 14px; padding: 12px; border-radius: 14px; background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(59, 130, 246, 0.45);">
+        <textarea id="aiInstructionNewInput" rows="2" placeholder="Ví dụ: Luôn giải thích thêm giống der/die/das và số nhiều của danh từ mới..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(6, 10, 22, 0.8); border: 1px solid rgba(255,255,255,0.14); color: #fff; font-size: 0.88rem; outline: none; resize: vertical; font-family: inherit;"></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button type="button" onclick="window.cancelAddAiInstructionForm()" class="deck-btn btn-glass-subtle" style="padding: 6px 12px; font-size: 0.8rem;">Hủy</button>
+          <button type="button" onclick="window.saveNewAiInstruction()" class="deck-btn btn-primary-ios" style="padding: 6px 14px; font-size: 0.8rem; background: linear-gradient(135deg, #2563eb, #3b82f6);">Lưu quy tắc</button>
+        </div>
+      </div>
+
+      <!-- Danh sách các thẻ chỉ dẫn (Cards) -->
+      <div id="aiInstructionsCardsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; min-height: 160px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DÁN NHANH VĂN BẢN BÀI GIẢNG (TỪ ĐIỆN THOẠI / CLIPBOARD) -->
+  <div id="pasteLectureModalOverlay" onclick="if(event.target===this) closePasteLectureModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10025; justify-content: center; align-items: center; padding: 16px;">
+    <div class="liquid-glass" style="width: 100%; max-width: 560px; background: linear-gradient(145deg, rgba(11, 17, 32, 0.98), rgba(15, 23, 42, 0.97)); border: 1px solid rgba(56, 189, 248, 0.32); border-radius: 22px; padding: 22px; box-shadow: 0 28px 65px rgba(0,0,0,0.75);">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.09); margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-paste" style="color: #38bdf8; font-size: 1.05rem;"></i>
+          <h4 style="font-size: 1.08rem; font-weight: 800; color: #fff; margin: 0;">Dán văn bản tiếng Đức cần dịch</h4>
+        </div>
+        <button type="button" onclick="closePasteLectureModal()" style="width: 30px; height: 30px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #cbd5e1; cursor: pointer; display: grid; place-items: center;" title="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+        <span style="font-size: 0.8rem; color: #94a3b8;">Dán ghi chú bài giảng từ điện thoại hoặc bấm nút bên cạnh để lấy từ Clipboard:</span>
+        <button type="button" onclick="pasteClipboardToModal()" class="deck-btn btn-glass-subtle" style="padding: 6px 12px; font-size: 0.78rem; border-color: rgba(56, 189, 248, 0.4); color: #7dd3fc;">
+          <i class="fa-regular fa-clipboard"></i> Dán từ Clipboard
+        </button>
+      </div>
+
+      <textarea id="pasteLectureTextarea" rows="6" placeholder="Ví dụ: Guten Morgen zusammen. Heute besprechen wir die wichtigsten Regeln für die Prüfung nächste Woche..." style="width: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(6, 10, 22, 0.8); border: 1px solid rgba(255,255,255,0.16); color: #fff; font-size: 0.92rem; line-height: 1.6; outline: none; resize: vertical; font-family: inherit;"></textarea>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+        <button type="button" onclick="closePasteLectureModal()" class="deck-btn btn-glass-subtle" style="padding: 9px 16px; font-size: 0.85rem;">Hủy</button>
+        <button type="button" onclick="submitPasteLectureText()" class="deck-btn btn-primary-ios" style="padding: 9px 18px; font-size: 0.85rem; background: linear-gradient(135deg, #0284c7, #38bdf8);">
+          <i class="fa-solid fa-language"></i> Xử lý & Dịch ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN XÓA BẢNG DỊCH -->
+  <div id="confirmClearLiveModalOverlay" onclick="if(event.target===this) closeConfirmClearLiveModal()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10030; justify-content: center; align-items: center; padding: 16px;">
+    <div class="liquid-glass" style="width: 100%; max-width: 420px; background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(24, 24, 38, 0.97)); border: 1px solid rgba(248, 113, 113, 0.4); border-radius: 20px; padding: 22px; box-shadow: 0 28px 65px rgba(0,0,0,0.75);">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.2); color: #f87171; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h4 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;">Xác nhận xóa bảng dịch?</h4>
+      </div>
+      <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 18px;">
+        Toàn bộ câu tiếng Đức, bản dịch tiếng Việt song song và đoạn văn dịch nối tiếp hiện tại sẽ bị xóa khỏi màn hình. Bạn chắc chắn muốn xóa chứ?
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" onclick="closeConfirmClearLiveModal()" class="deck-btn btn-glass-subtle" style="padding: 8px 16px; font-size: 0.85rem;">Hủy</button>
+        <button type="button" onclick="confirmClearLiveTrans()" class="deck-btn btn-primary-ios" style="padding: 8px 18px; font-size: 0.85rem; background: linear-gradient(135deg, #dc2626, #ef4444);">
+          <i class="fa-solid fa-trash-can"></i> Xóa bảng dịch
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="./vocab_5000_data.js"></script>
   <script src="./vocab_hub.js"></script>
   <script src="./yt_floating_player.js"></script>
+  <script type="module">
+    const viteEnvKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
+    const nodeEnvKey = (typeof process !== 'undefined' && process.env && process.env.VITE_GROQ_API_KEY) || '';
+    window.__VITE_GROQ_API_KEY__ = String(viteEnvKey || nodeEnvKey || '')
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
+  </script>
   <script>
     // ==========================================
     // 1. DATA: DANH SÁCH 50+ CỤM TỪ (Nomen-Verb-Verbindungen & Giao tiếp Đức B1/B2)
@@ -2222,209 +2512,953 @@
     }
 
     // ==========================================
-    // 4. LIVE CLASSROOM SPEECH-TO-TEXT & TRANSLATION
+    // 4. LIVE CLASSROOM AUDIO CAPTURE (CONTINUOUS 12S MEDIARECORDER + GROQ WHISPER TURBO)
     // ==========================================
+    let isListeningRef = false;
     let isClassroomListening = false;
-    let recognition = null;
+    const GROQ_CHUNK_MS = 12000;
+    let activeMicStream = null;
+    let activeSegmentRecorder = null;
+    let groqSegmentMimeType = '';
+    let groqChunkRotationTimerId = null;
+    let groqSegmentCounter = 0;
+    const groqUploadQueue = [];
+    let isProcessingGroqQueue = false;
     let lectureHistory = [];
+    let lastCommittedNorm = '';
+    let lastCommittedAt = 0;
+
+    // Hàng đợi tách biệt hoàn toàn khỏi luồng onresult của micro (Non-blocking Async)
+    const pendingCapturedSentences = [];
+    let asyncDispatchScheduled = false;
+
+    // Luồng 1 (Khung trên song song tốc độ <0.3s) & Luồng 2 (Khung dưới gom cụm 3-4 câu / 15s biên tập mạch lạc)
+    let liveSessionCounter = 0;
+    const prosePendingChunks = [];
+    const proseBatchQueue = [];
+    let proseBatchTimerId = null;
+    let isProcessingProseBatch = false;
+    let editedVietnameseParagraphs = [];
+
+    // Đồng hồ đếm thời gian ghi âm + Screen Wake Lock
+    let recordingStartedAt = 0;
+    let recordingTimerIntervalId = null;
+    let lectureWakeLock = null;
+
     const EXAM_KEYWORDS = ["prüfung", "test", "klausur", "aufgabe", "hausaufgabe", "abgabe", "termin", "wichtig", "beachten", "wiederholen", "noten", "vorbereitung"];
+    const VI_EXAM_KEYWORDS = ["kiểm tra", "bài thi", "kỳ thi", "bài tập về nhà", "hạn nộp", "quan trọng", "lưu ý", "ôn tập", "đề thi"];
 
-    function initSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Trình duyệt không hỗ trợ Web Speech API. Hãy dùng Microsoft Edge hoặc Google Chrome!");
-        return false;
-      }
-      recognition = new SpeechRecognition();
-      recognition.lang = 'de-DE';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
-
-      const liveBadge = document.getElementById('speechLiveBadge');
-      const interimBox = document.getElementById('interimSpeechDisplay');
-
-      recognition.onstart = function() {
-        isClassroomListening = true;
-        document.getElementById('micLed').style.background = '#10b981';
-        document.getElementById('micStatusText').innerText = 'Đang nghe giảng (de-DE)...';
-        document.getElementById('recBtnText').innerText = 'Tạm dừng nghe';
-        if (liveBadge) liveBadge.style.display = 'inline-flex';
-      };
-
-      recognition.onresult = function(event) {
-        let interimText = '';
-        let finalText = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalText += transcript;
-          } else {
-            interimText += transcript;
-          }
-        }
-
-        // Hiển thị trực tiếp câu giáo viên đang nói dở (interim real-time)
-        if (interimBox) {
-          if (interimText.trim()) {
-            interimBox.innerText = `Đang nghe: "${interimText}"...`;
-            interimBox.style.display = 'block';
-          } else {
-            interimBox.style.display = 'none';
-          }
-        }
-
-        // Khi câu nói đã hoàn chỉnh (isFinal): lưu và dịch tức thì
-        if (finalText.trim()) {
-          if (interimBox) interimBox.style.display = 'none';
-          appendAndTranslateLectureSentence(finalText.trim());
-        }
-      };
-
-      recognition.onerror = function(event) {
-        console.warn("Speech recognition error:", event.error);
-        if (event.error === 'not-allowed') {
-          alert("Vui lòng cấp quyền truy cập Microphone cho ứng dụng trong trình duyệt!");
-          isClassroomListening = false;
-        }
-      };
-
-      recognition.onend = function() {
-        if (isClassroomListening) {
-          // Tự động kích hoạt lại nhanh chóng (keep-alive) không để gián đoạn buổi học
-          setTimeout(() => {
-            if (isClassroomListening) {
-              try { recognition.start(); } catch(e) {}
-            }
-          }, 250);
-        } else {
-          if (liveBadge) liveBadge.style.display = 'none';
-          if (interimBox) interimBox.style.display = 'none';
-        }
-      };
-      return true;
+    function formatRecordingDuration(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const hrs = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+      const pad = (n) => String(n).padStart(2, '0');
+      return hrs > 0 ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`;
     }
 
-    function toggleClassroomListen() {
-      if (!recognition && !initSpeechRecognition()) return;
-      const liveBadge = document.getElementById('speechLiveBadge');
-      const interimBox = document.getElementById('interimSpeechDisplay');
+    function updateRecordingTimerUI() {
+      const el = document.getElementById('recDurationTimer');
+      if (!el) return;
+      el.textContent = recordingStartedAt ? formatRecordingDuration(Date.now() - recordingStartedAt) : '00:00';
+    }
 
-      if (!isClassroomListening) {
-        try {
-          recognition.start();
-        } catch(e) {
-          try { recognition.stop(); setTimeout(() => recognition.start(), 200); } catch(err) {}
-        }
-      } else {
-        isClassroomListening = false;
-        try { recognition.stop(); } catch(e) {}
-        document.getElementById('micLed').style.background = '#64748b';
-        document.getElementById('micStatusText').innerText = 'Đã tạm dừng';
-        document.getElementById('recBtnText').innerText = 'Bắt đầu lắng nghe bài giảng';
-        if (liveBadge) liveBadge.style.display = 'none';
-        if (interimBox) interimBox.style.display = 'none';
+    function startRecordingTimer() {
+      clearInterval(recordingTimerIntervalId);
+      recordingStartedAt = Date.now();
+      updateRecordingTimerUI();
+      recordingTimerIntervalId = setInterval(updateRecordingTimerUI, 1000);
+    }
+
+    function stopRecordingTimer(resetDisplay = false) {
+      clearInterval(recordingTimerIntervalId);
+      recordingTimerIntervalId = null;
+      if (resetDisplay) {
+        recordingStartedAt = 0;
+        updateRecordingTimerUI();
       }
     }
 
-    async function translateGermanToVietnamese(germanText) {
+    async function requestLectureWakeLock() {
+      if (!('wakeLock' in navigator) || !navigator.wakeLock || typeof navigator.wakeLock.request !== 'function') {
+        return;
+      }
       try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=vi&dt=t&q=${encodeURIComponent(germanText)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data && data[0]) {
-          let vi = "";
-          data[0].forEach(seg => { if (seg && seg[0]) vi += seg[0]; });
-          return vi || "Không thể dịch.";
-        }
-        return "Không có bản dịch.";
+        if (lectureWakeLock) return;
+        lectureWakeLock = await navigator.wakeLock.request('screen');
+        lectureWakeLock.addEventListener('release', () => {
+          lectureWakeLock = null;
+        });
       } catch (err) {
-        return "Lỗi kết nối dịch.";
+        console.warn('Screen Wake Lock request failed:', err?.message || err);
       }
     }
 
-    async function appendAndTranslateLectureSentence(deSentence) {
+    async function releaseLectureWakeLock() {
+      if (!lectureWakeLock) return;
+      try {
+        await lectureWakeLock.release();
+      } catch (_) {}
+      lectureWakeLock = null;
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && isListeningRef) {
+        requestLectureWakeLock();
+      }
+    });
+
+    function escapeHtmlSafe(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showMicAlert(message, variant = 'error') {
+      const alertBox = document.getElementById('micPermissionAlert');
+      const alertText = document.getElementById('micPermissionAlertText');
+      if (alertBox && alertText) {
+        alertText.textContent = message;
+        if (variant === 'info') {
+          alertBox.style.background = 'rgba(56, 189, 248, 0.14)';
+          alertBox.style.borderColor = 'rgba(56, 189, 248, 0.42)';
+          alertBox.style.color = '#bae6fd';
+        } else {
+          alertBox.style.background = 'rgba(239, 68, 68, 0.16)';
+          alertBox.style.borderColor = 'rgba(239, 68, 68, 0.42)';
+          alertBox.style.color = '#fecdd3';
+        }
+        alertBox.style.display = 'flex';
+      }
+      if (typeof showAppToast === 'function' && variant !== 'info') {
+        showAppToast(message, 'removed');
+      }
+    }
+
+    function hideMicAlert() {
+      const alertBox = document.getElementById('micPermissionAlert');
+      if (alertBox) alertBox.style.display = 'none';
+    }
+
+    function getGroqApiKey() {
+      let stored = '';
+      try {
+        stored = localStorage.getItem('VITE_GROQ_API_KEY') || localStorage.getItem('groq_api_key') || '';
+      } catch (_) {}
+      const rawKey = String(window.__VITE_GROQ_API_KEY__ || stored || '');
+      return rawKey.trim().replace(/^["']|["']$/g, '').trim();
+    }
+
+    function pickSupportedAudioMimeType() {
+      if (typeof MediaRecorder === 'undefined') return '';
+      // Ưu tiên chuẩn audio/webm để API Groq Whisper đọc ổn định 100%
+      const candidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+      ];
+
+      for (const mime of candidates) {
+        try {
+          if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mime)) {
+            return mime;
+          }
+        } catch (_) {}
+      }
+      return '';
+    }
+
+    function setMicUiActive(active, statusLabel) {
+      isClassroomListening = active;
+      const led = document.getElementById('micLed');
+      const statusText = document.getElementById('micStatusText');
+      const btnText = document.getElementById('recBtnText');
+      const btn = document.getElementById('btnToggleRec');
+      const liveBadge = document.getElementById('speechLiveBadge');
+      const interimBox = document.getElementById('interimSpeechDisplay');
+
+      if (led) led.style.background = active ? '#10b981' : '#64748b';
+      if (statusText) statusText.innerText = statusLabel || (active ? 'Đang nghe giảng (Groq Whisper DE)...' : 'Đã tạm dừng');
+      if (btnText) btnText.innerText = active ? 'Dừng lắng nghe' : 'Bắt đầu lắng nghe bài giảng';
+      if (btn) {
+        btn.style.background = active
+          ? 'linear-gradient(135deg, #059669, #10b981)'
+          : 'linear-gradient(135deg, #e11d48, #f43f5e)';
+      }
+      if (liveBadge) liveBadge.style.display = active ? 'inline-flex' : 'none';
+      if (!active && !isProcessingGroqQueue && groqUploadQueue.length === 0 && interimBox) {
+        interimBox.style.display = 'none';
+      }
+    }
+
+    function updateGroqLiveStatus(statusText) {
+      const interimBox = document.getElementById('interimSpeechDisplay');
+      if (!interimBox) return;
+      const clean = String(statusText || '').trim();
+      if (!clean || (!isListeningRef && !isProcessingGroqQueue && groqUploadQueue.length === 0)) {
+        interimBox.style.display = 'none';
+        return;
+      }
+      interimBox.innerHTML = `<span style="opacity: 0.85;"><i class="fa-solid fa-wave-square" style="margin-right: 6px; color: #38bdf8;"></i>Groq Whisper (de):</span> <span style="color: #bae6fd;">${escapeHtmlSafe(clean)}</span>`;
+      interimBox.style.display = 'block';
+    }
+
+    function scheduleAsyncTranslationPipeline() {
+      if (asyncDispatchScheduled) return;
+      asyncDispatchScheduled = true;
+      setTimeout(() => {
+        asyncDispatchScheduled = false;
+        while (pendingCapturedSentences.length > 0) {
+          const nextSentence = pendingCapturedSentences.shift();
+          if (nextSentence) {
+            enqueueLectureSentence(nextSentence);
+          }
+        }
+      }, 0);
+    }
+
+    function commitLectureSentence(rawSentence) {
+      const clean = String(rawSentence || '').replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      const norm = clean.toLowerCase();
+      const now = Date.now();
+      if (norm === lastCommittedNorm && (now - lastCommittedAt) < 3500) {
+        return;
+      }
+      lastCommittedNorm = norm;
+      lastCommittedAt = now;
+      pendingCapturedSentences.push(clean);
+      scheduleAsyncTranslationPipeline();
+    }
+
+    function stopActiveMediaStream() {
+      if (activeMicStream) {
+        try {
+          activeMicStream.getTracks().forEach((track) => track.stop());
+        } catch (_) {}
+        activeMicStream = null;
+      }
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const res = String(reader.result || '');
+          const commaIdx = res.indexOf(',');
+          resolve(commaIdx >= 0 ? res.slice(commaIdx + 1) : res);
+        };
+        reader.onerror = () => reject(new Error('Không thể đọc dữ liệu âm thanh.'));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function isIgnorableGroqTranscript(text) {
+      const clean = String(text || '').trim();
+      if (!clean) return true;
+      // Bỏ qua đoạn im lặng / tiếng ồn nếu chuỗi rỗng hoặc chỉ toàn dấu chấm / ký tự đặc biệt
+      if (!/[a-zA-ZäöüßÄÖÜ0-9]/.test(clean)) return true;
+      const strippedLetters = clean.replace(/[^a-zA-ZäöüßÄÖÜ0-9]/g, '');
+      if (strippedLetters.length < 2) return true;
+      return false;
+    }
+
+    async function transcribeBlobWithGroqWhisper(audioBlob, mimeType) {
+      const groqKey = getGroqApiKey();
+      const cleanMime = (mimeType || audioBlob.type || 'audio/webm').split(';')[0].trim() || 'audio/webm';
+      const ext = cleanMime.includes('mp4') ? 'm4a' : cleanMime.includes('ogg') ? 'ogg' : 'webm';
+
+      if (groqKey) {
+        const formData = new FormData();
+        formData.append('file', audioBlob, `lecture_${Date.now()}.${ext}`);
+        formData.append('model', 'whisper-large-v3-turbo');
+        formData.append('language', 'de');
+        formData.append('response_format', 'json');
+
+        const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.error?.message || `Lỗi Groq Whisper (${res.status})`);
+        }
+        return String(data?.text || '').trim();
+      }
+
+      // Dự phòng qua backend nếu biến môi trường phía server đã nạp
+      const audioBase64 = await blobToBase64(audioBlob);
+      const proxyRes = await fetch('/api/groq-transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audioBase64,
+          mimeType: cleanMime,
+        }),
+      });
+      const proxyData = await proxyRes.json().catch(() => ({}));
+      if (!proxyRes.ok) {
+        throw new Error(proxyData?.error || `Lỗi Groq Whisper (${proxyRes.status})`);
+      }
+      return String(proxyData?.text || '').trim();
+    }
+
+    async function processGroqUploadQueue() {
+      if (isProcessingGroqQueue) return;
+      isProcessingGroqQueue = true;
+
+      try {
+        while (groqUploadQueue.length > 0) {
+          const item = groqUploadQueue.shift();
+          if (!item || item.sessionSnapshot !== liveSessionCounter) continue;
+
+          if (isListeningRef) {
+            updateGroqLiveStatus(`Đang thu âm liên tục & chuyển âm gói #${item.seqNum} qua Groq Whisper...`);
+          } else {
+            updateGroqLiveStatus(`Đang hoàn tất chuyển âm gói #${item.seqNum}...`);
+          }
+
+          try {
+            const rawText = await transcribeBlobWithGroqWhisper(item.blob, item.mimeType);
+            if (item.sessionSnapshot !== liveSessionCounter) continue;
+            hideMicAlert();
+
+            if (!isIgnorableGroqTranscript(rawText)) {
+              const sentences = rawText
+                .replace(/\s+/g, ' ')
+                .split(/(?<=[.?!])\s+/)
+                .map((s) => s.trim())
+                .filter((s) => !isIgnorableGroqTranscript(s));
+              const list = sentences.length > 0 ? sentences : [rawText.trim()];
+              list.forEach((sentence) => commitLectureSentence(sentence));
+            }
+          } catch (err) {
+            console.warn('Groq Whisper chunk error:', err);
+            showMicAlert(`Lỗi Groq Whisper (gói #${item.seqNum}): ${err?.message || 'Không thể nhận diện âm thanh.'}`);
+          }
+        }
+      } finally {
+        isProcessingGroqQueue = false;
+        if (groqUploadQueue.length > 0) {
+          processGroqUploadQueue();
+        } else if (isListeningRef) {
+          updateGroqLiveStatus('Đang lắng nghe bài giảng liên tục (tự động gửi mỗi 12 giây)...');
+        } else {
+          updateGroqLiveStatus('');
+          flushProseBatchBuffer(true);
+        }
+      }
+    }
+
+    function startNewGroqSegmentRecorder(stream, sessionSnapshot) {
+      if (!stream || typeof MediaRecorder === 'undefined') return null;
+      const chunks = [];
+      const opts = groqSegmentMimeType ? { mimeType: groqSegmentMimeType } : undefined;
+      const rec = opts ? new MediaRecorder(stream, opts) : new MediaRecorder(stream);
+      const effectiveMime = (rec.mimeType || groqSegmentMimeType || 'audio/webm').split(';')[0].trim() || 'audio/webm';
+
+      rec.ondataavailable = (ev) => {
+        if (ev.data && ev.data.size > 0) {
+          chunks.push(ev.data);
+        }
+      };
+
+      rec.onerror = (ev) => {
+        console.warn('MediaRecorder segment error:', ev?.error || ev);
+      };
+
+      rec.onstop = () => {
+        if (chunks.length === 0) return;
+        const audioBlob = new Blob(chunks, { type: effectiveMime });
+        if (audioBlob.size < 1500) return;
+        groqSegmentCounter++;
+        const seqNum = groqSegmentCounter;
+        groqUploadQueue.push({
+          blob: audioBlob,
+          mimeType: effectiveMime,
+          sessionSnapshot,
+          seqNum,
+        });
+        processGroqUploadQueue();
+      };
+
+      rec.start();
+      return rec;
+    }
+
+    function rotateGroqSegment(sessionSnapshot) {
+      if (!isListeningRef || !activeMicStream) return;
+      const prevRec = activeSegmentRecorder;
+      let nextRec = null;
+
+      try {
+        // Mở recorder gói mới ngay trước khi đóng gói cũ để đảm bảo không ngắt quãng & giữ chuẩn header audio/webm cho mọi gói
+        nextRec = startNewGroqSegmentRecorder(activeMicStream, sessionSnapshot);
+        activeSegmentRecorder = nextRec;
+      } catch (_) {
+        nextRec = null;
+      }
+
+      if (prevRec && prevRec.state !== 'inactive') {
+        const origOnStop = prevRec.onstop;
+        prevRec.onstop = function(ev) {
+          if (typeof origOnStop === 'function') origOnStop.call(this, ev);
+          if (!nextRec && isListeningRef && activeMicStream) {
+            try {
+              activeSegmentRecorder = startNewGroqSegmentRecorder(activeMicStream, sessionSnapshot);
+            } catch (_) {}
+          }
+        };
+        try {
+          prevRec.stop();
+        } catch (_) {}
+      } else if (!nextRec && isListeningRef && activeMicStream) {
+        try {
+          activeSegmentRecorder = startNewGroqSegmentRecorder(activeMicStream, sessionSnapshot);
+        } catch (_) {}
+      }
+    }
+
+    async function requestMicStreamWithClearError() {
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+        showMicAlert('Trình duyệt hiện tại không hỗ trợ truy cập Microphone (getUserMedia). Vui lòng mở bằng Chrome hoặc Safari bản mới nhất qua kết nối HTTPS.');
+        return null;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        hideMicAlert();
+        return stream;
+      } catch (err) {
+        const name = err?.name || '';
+        if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+          showMicAlert('Bạn chưa cấp quyền Microphone. Vui lòng vào Cài đặt trình duyệt / bấm biểu tượng ổ khóa trên thanh địa chỉ -> Bật Microphone (Cho phép) và tải lại trang.');
+        } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+          showMicAlert('Không tìm thấy thiết bị Microphone trên máy của bạn.');
+        } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+          showMicAlert('Microphone đang bị ứng dụng khác chiếm dụng. Vui lòng tắt ứng dụng kia rồi thử lại.');
+        } else {
+          showMicAlert(`Không thể mở Microphone: ${err?.message || 'Lỗi thiết bị âm thanh.'}`);
+        }
+        setMicUiActive(false, 'Chưa cấp quyền Micro');
+        return null;
+      }
+    }
+
+    async function toggleClassroomListen() {
+      if (!isListeningRef) {
+        hideMicAlert();
+        setMicUiActive(false, 'Đang xin quyền Micro...');
+
+        if (typeof MediaRecorder === 'undefined') {
+          showMicAlert('Trình duyệt hiện tại không hỗ trợ MediaRecorder để ghi âm.');
+          setMicUiActive(false, 'Không hỗ trợ');
+          return;
+        }
+
+        const stream = await requestMicStreamWithClearError();
+        if (!stream) {
+          isListeningRef = false;
+          return;
+        }
+        activeMicStream = stream;
+        groqSegmentMimeType = pickSupportedAudioMimeType();
+
+        // Kích hoạt Screen Wake Lock để màn hình không tắt ngang khi đang ghi âm bài giảng
+        requestLectureWakeLock();
+
+        const sessionSnapshot = liveSessionCounter;
+        try {
+          activeSegmentRecorder = startNewGroqSegmentRecorder(stream, sessionSnapshot);
+        } catch (err) {
+          stopActiveMediaStream();
+          releaseLectureWakeLock();
+          showMicAlert(`Không thể khởi động MediaRecorder: ${err?.message || 'Lỗi thiết bị.'}`);
+          setMicUiActive(false, 'Lỗi khởi động Micro');
+          return;
+        }
+
+        isListeningRef = true;
+        startRecordingTimer();
+        setMicUiActive(true, 'Đang thu âm (Groq Whisper DE · 12s/gói)...');
+        updateGroqLiveStatus('Đang lắng nghe bài giảng liên tục (tự động gửi mỗi 12 giây)...');
+
+        clearInterval(groqChunkRotationTimerId);
+        groqChunkRotationTimerId = setInterval(() => {
+          rotateGroqSegment(sessionSnapshot);
+        }, GROQ_CHUNK_MS);
+      } else {
+        isListeningRef = false;
+        clearInterval(groqChunkRotationTimerId);
+        groqChunkRotationTimerId = null;
+        stopRecordingTimer();
+        await releaseLectureWakeLock();
+
+        const lastRec = activeSegmentRecorder;
+        activeSegmentRecorder = null;
+        if (lastRec && lastRec.state !== 'inactive') {
+          await new Promise((resolve) => {
+            const origOnStop = lastRec.onstop;
+            lastRec.onstop = function(ev) {
+              if (typeof origOnStop === 'function') origOnStop.call(this, ev);
+              resolve();
+            };
+            try {
+              lastRec.stop();
+            } catch (_) {
+              resolve();
+            }
+          });
+        }
+
+        stopActiveMediaStream();
+        setMicUiActive(false, isProcessingGroqQueue || groqUploadQueue.length > 0 ? 'Đang hoàn tất gói âm thanh cuối...' : 'Đã tạm dừng');
+        if (!isProcessingGroqQueue && groqUploadQueue.length === 0) {
+          updateGroqLiveStatus('');
+          flushProseBatchBuffer(true);
+        }
+      }
+    }
+
+    // ========================================================
+    // LUỒNG 1: DỊCH TỨC THÌ <0.3s CHO KHUNG SONG SONG PHÍA TRÊN (KHÔNG DÙNG GEMINI)
+    // ========================================================
+    async function fetchFastGoogleTranslate(germanText) {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=vi&dt=t&q=${encodeURIComponent(germanText)}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Lỗi dịch (${res.status})`);
+      }
+      const data = await res.json();
+      const translation = Array.isArray(data && data[0])
+        ? data[0].map((item) => (item && item[0] ? item[0] : '')).join('').trim()
+        : '';
+      if (!translation) {
+        throw new Error('Không có bản dịch.');
+      }
+      return translation.replace(/^[“"«]+|[”"»]+$/g, '').trim();
+    }
+
+    async function runStream1FastTranslation(deSentence, historyIdx, viTextSpan, vietStream, sessionSnapshot) {
+      try {
+        const fastVi = await fetchFastGoogleTranslate(deSentence);
+        if (sessionSnapshot !== liveSessionCounter) return;
+        if (lectureHistory[historyIdx]) {
+          lectureHistory[historyIdx].vi = fastVi;
+        }
+        if (viTextSpan) {
+          viTextSpan.style.cssText = 'color:#a7f3d0; font-weight:500;';
+          viTextSpan.textContent = fastVi;
+        }
+      } catch (err) {
+        if (sessionSnapshot !== liveSessionCounter) return;
+        const msg = err?.message || 'Lỗi kết nối dịch.';
+        if (lectureHistory[historyIdx]) {
+          lectureHistory[historyIdx].vi = `[${msg}]`;
+        }
+        if (viTextSpan) {
+          viTextSpan.style.cssText = 'color:#fca5a5; font-style:italic;';
+          viTextSpan.textContent = msg;
+        }
+      } finally {
+        if (vietStream) {
+          vietStream.scrollTop = vietStream.scrollHeight;
+        }
+      }
+    }
+
+    // ========================================================
+    // LUỒNG 2: GOM CỤM 3–4 CÂU / 15s & BIÊN TẬP VĂN XUÔI MẠCH LẠC (KHUNG DƯỚI)
+    // ========================================================
+    function isCompleteGermanChunk(str) {
+      const cleaned = String(str || '').replace(/^[,.;:!?'"\s]+|[,.;:!?'"\s]+$/g, '').trim();
+      if (!cleaned) return false;
+      const words = cleaned.match(/[a-zA-ZäöüßÄÖÜ0-9]+/g) || [];
+      return words.length >= 3;
+    }
+
+    function countMeaningfulGermanWords(chunks) {
+      return chunks
+        .join(' ')
+        .replace(/^[,.;:!?'"\s]+|[,.;:!?'"\s]+$/g, '')
+        .split(/\s+/)
+        .filter((w) => /[a-zA-ZäöüßÄÖÜ0-9]{2,}/.test(w)).length;
+    }
+
+    function updateProseStatusLine() {
       const articleBox = document.getElementById('vietnameseArticleBox');
+      if (!articleBox) return;
+      let statusEl = document.getElementById('proseBatchStatus');
+      const shouldShow =
+        prosePendingChunks.length > 0 || proseBatchQueue.length > 0 || isProcessingProseBatch;
+
+      if (!shouldShow) {
+        if (statusEl) statusEl.remove();
+        return;
+      }
+
+      const emptyNotice = articleBox.querySelector('.vi-empty-placeholder');
+      if (emptyNotice) {
+        emptyNotice.style.display = 'none';
+      }
+
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'proseBatchStatus';
+        statusEl.style.cssText =
+          'display: inline-flex; align-items: center; gap: 7px; margin-top: 6px; padding: 5px 11px; border-radius: 10px; background: rgba(56, 189, 248, 0.09); border: 1px solid rgba(56, 189, 248, 0.22); color: #7dd3fc; font-size: 0.82rem; font-style: italic;';
+        statusEl.innerHTML =
+          '<i class="fa-solid fa-circle-notch fa-spin" style="color:#38bdf8; font-size:0.78rem;"></i><span>Đang tổng hợp ý tiếp theo...</span>';
+        articleBox.appendChild(statusEl);
+      } else {
+        articleBox.appendChild(statusEl);
+      }
+      articleBox.scrollTo({ top: articleBox.scrollHeight, behavior: 'smooth' });
+    }
+
+    function appendEditedProseParagraph(articleBox, paragraphText) {
+      if (!articleBox) return;
+      const cleanText = String(paragraphText || '')
+        .replace(/^[“"«]+|[”"»]+$/g, '')
+        .replace(/\s*\n+\s*/g, ' ')
+        .trim();
+      if (!cleanText) return;
+
+      const emptyNotice = articleBox.querySelector('.vi-empty-placeholder');
+      if (emptyNotice) emptyNotice.remove();
+
+      const p = document.createElement('p');
+      p.className = 'vi-prose-paragraph';
+      p.style.cssText = 'margin: 0 0 14px 0; line-height: 1.9; text-align: justify; color: #f1f5f9;';
+
+      // Hỗ trợ highlight inline các đoạn nhắc thi cử [[EXAM]]...[[/EXAM]] mà không ngắt đoạn
+      const normalizedExam = cleanText.replace(
+        /\[\[EXAM\]\]([\s\S]*?)\[\[\/?EXAM\]\]/g,
+        '[[EXAM]]$1[[/EXAM]]'
+      );
+      const parts = normalizedExam.split(/(\[\[EXAM\]\][\s\S]*?\[\[\/EXAM\]\])/g);
+      parts.forEach((part) => {
+        if (!part) return;
+        if (part.startsWith('[[EXAM]]') && part.endsWith('[[/EXAM]]')) {
+          const inner = part.slice(8, -9).replace(/\[\[\/?EXAM\]\]/g, '').trim();
+          if (inner) {
+            const strong = document.createElement('strong');
+            strong.style.cssText =
+              'font-weight: 700; background: rgba(250, 204, 21, 0.22); color: #fef08a; padding: 1px 5px; border-radius: 5px;';
+            strong.textContent = inner;
+            p.appendChild(strong);
+          }
+        } else {
+          const cleanSeg = part.replace(/\[\[\/?EXAM\]\]/g, '');
+          if (cleanSeg) {
+            p.appendChild(document.createTextNode(cleanSeg));
+          }
+        }
+      });
+
+      const plainForStorage = cleanText.replace(/\[\[\/?EXAM\]\]/g, '').trim();
+      editedVietnameseParagraphs.push(plainForStorage);
+
+      const statusEl = document.getElementById('proseBatchStatus');
+      if (statusEl && statusEl.parentNode === articleBox) {
+        articleBox.insertBefore(p, statusEl);
+      } else {
+        articleBox.appendChild(p);
+      }
+      articleBox.scrollTo({ top: articleBox.scrollHeight, behavior: 'smooth' });
+    }
+
+    function enqueueProseBatchChunk(deSentence) {
+      prosePendingChunks.push(deSentence);
+      updateProseStatusLine();
+
+      clearTimeout(proseBatchTimerId);
+      proseBatchTimerId = null;
+
+      const completeCount = prosePendingChunks.filter(isCompleteGermanChunk).length;
+      if (completeCount >= 3 || (prosePendingChunks.length >= 4 && completeCount >= 1)) {
+        flushProseBatchBuffer(false);
+      } else {
+        proseBatchTimerId = setTimeout(() => {
+          flushProseBatchBuffer(false);
+        }, 15000);
+      }
+    }
+
+    function flushProseBatchBuffer(forceEvenSmall = false) {
+      clearTimeout(proseBatchTimerId);
+      proseBatchTimerId = null;
+      if (prosePendingChunks.length === 0) {
+        updateProseStatusLine();
+        return;
+      }
+
+      const wordCount = countMeaningfulGermanWords(prosePendingChunks);
+      if (!forceEvenSmall && wordCount < 2) {
+        // Mảnh từ quá vụn vặt (như ", die.") chờ nối vào câu kế tiếp thay vì gọi API vô ích
+        updateProseStatusLine();
+        return;
+      }
+
+      const batchSentences = prosePendingChunks.splice(0, prosePendingChunks.length);
+      proseBatchQueue.push({
+        sessionSnapshot: liveSessionCounter,
+        batchSentences,
+      });
+      updateProseStatusLine();
+      processProseBatchQueue();
+    }
+
+    async function processProseBatchQueue() {
+      if (isProcessingProseBatch) return;
+      isProcessingProseBatch = true;
+      updateProseStatusLine();
+
+      try {
+        while (proseBatchQueue.length > 0) {
+          const job = proseBatchQueue.shift();
+          if (!job || job.sessionSnapshot !== liveSessionCounter) continue;
+
+          const prevViContext = editedVietnameseParagraphs.slice(-2).join(' ');
+          let editedParagraph = '';
+
+          try {
+            const res = await fetch('/api/translate-batch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                batchSentences: job.batchSentences,
+                previousVietnameseContext: prevViContext,
+              }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              editedParagraph = String(data?.paragraph || '').trim();
+            }
+          } catch (_) {
+            // Dự phòng dùng Google Translate ghép đoạn nếu mạng/AI tạm bận
+          }
+
+          if (!editedParagraph) {
+            try {
+              editedParagraph = await fetchFastGoogleTranslate(job.batchSentences.join(' '));
+            } catch (_) {
+              editedParagraph = '';
+            }
+          }
+
+          if (job.sessionSnapshot !== liveSessionCounter) continue;
+          if (editedParagraph) {
+            const articleBox = document.getElementById('vietnameseArticleBox');
+            appendEditedProseParagraph(articleBox, editedParagraph);
+          }
+        }
+      } finally {
+        isProcessingProseBatch = false;
+        updateProseStatusLine();
+        if (proseBatchQueue.length > 0) {
+          processProseBatchQueue();
+        }
+      }
+    }
+
+    function enqueueLectureSentence(deSentence) {
       const germanStream = document.getElementById('liveGermanStream');
       const vietStream = document.getElementById('liveVietStream');
 
-      const emptyNotice = articleBox.querySelector('p');
-      if (emptyNotice) articleBox.innerHTML = '';
       if (germanStream && germanStream.querySelector('p')) germanStream.innerHTML = '';
       if (vietStream && vietStream.querySelector('p')) vietStream.innerHTML = '';
 
       const timeStr = new Date().toLocaleTimeString();
-      const viTranslation = await translateGermanToVietnamese(deSentence);
-      lectureHistory.push({ time: timeStr, de: deSentence, vi: viTranslation });
+      const historyIdx = lectureHistory.length;
+      const sessionSnapshot = liveSessionCounter;
+      lectureHistory.push({ time: timeStr, de: deSentence, vi: 'Đang dịch...' });
 
-      // 1. Cập nhật Ô Tiếng Đức (Giáo viên nói)
+      // 1. Hiển thị ngay câu tiếng Đức ở cột trên bên trái
       if (germanStream) {
         const pDe = document.createElement('div');
-        pDe.style.cssText = "margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #38bdf8;";
-        pDe.innerHTML = `<span style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;"><i class="fa-regular fa-clock"></i> ${timeStr}</span><span style="color:#fff; font-weight:500;">${deSentence}</span>`;
+        pDe.style.cssText = 'margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #38bdf8;';
+        pDe.innerHTML = `<span style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;"><i class="fa-regular fa-clock"></i> ${escapeHtmlSafe(timeStr)}</span><span style="color:#fff; font-weight:500;">${escapeHtmlSafe(deSentence)}</span>`;
         germanStream.appendChild(pDe);
         germanStream.scrollTop = germanStream.scrollHeight;
       }
 
-      // 2. Cập nhật Ô Tiếng Việt (Dịch tự động song song)
+      // 2. LUỒNG 1: Tạo dòng dịch nhanh song song & gọi Google Translate ngay lập tức (<0.3s, không qua Gemini)
+      let viTextSpan = null;
       if (vietStream) {
         const pVi = document.createElement('div');
-        pVi.style.cssText = "margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #34d399;";
-        pVi.innerHTML = `<span style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;"><i class="fa-regular fa-clock"></i> ${timeStr}</span><span style="color:#a7f3d0; font-weight:500;">${viTranslation}</span>`;
+        pVi.style.cssText = 'margin-bottom: 10px; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 3px solid #34d399;';
+        const timeEl = document.createElement('span');
+        timeEl.style.cssText = 'font-size:0.75rem; color:#64748b; display:block; margin-bottom:2px;';
+        timeEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${escapeHtmlSafe(timeStr)}`;
+        viTextSpan = document.createElement('span');
+        viTextSpan.style.cssText = 'color:#94a3b8; font-style:italic; font-weight:500;';
+        viTextSpan.textContent = 'Đang dịch nhanh...';
+        pVi.appendChild(timeEl);
+        pVi.appendChild(viTextSpan);
         vietStream.appendChild(pVi);
         vietStream.scrollTop = vietStream.scrollHeight;
       }
+      runStream1FastTranslation(deSentence, historyIdx, viTextSpan, vietStream, sessionSnapshot);
 
-      // 3. Cập nhật Bản dịch tiếng Việt (Tổng Hợp Liền Mạch Dạng Văn Bản)
-      const lower = deSentence.toLowerCase();
-      const isExam = EXAM_KEYWORDS.some(kw => lower.includes(kw));
+      // 3. LUỒNG 2: Gom đệm câu hoàn chỉnh cho khung "1. Bản dịch tiếng Việt" bên dưới
+      enqueueProseBatchChunk(deSentence);
+    }
 
-      const div = document.createElement('div');
-      div.style.cssText = "margin-bottom: 16px; line-height: 1.85; text-align: justify;";
-
-      if (isExam) {
-        div.innerHTML = `
-          <div style="font-size: 0.8rem; font-weight: 800; color: #f87171; margin-bottom: 4px;">
-            <i class="fa-solid fa-triangle-exclamation"></i> [LƯU Ý GIÁO VIÊN DẶN THI CỬ / BÀI TẬP]:
-          </div>
-          <div style="background: rgba(239, 68, 68, 0.16); padding: 8px 12px; border-radius: 10px; border-left: 3px solid #ef4444; color: #fecdd3;">
-            “${viTranslation}”
-          </div>
-        `;
-      } else {
-        div.innerHTML = `“${viTranslation}”`;
-      }
-
-      articleBox.appendChild(div);
-      articleBox.scrollTop = articleBox.scrollHeight;
+    function appendAndTranslateLectureSentence(deSentence) {
+      commitLectureSentence(deSentence);
     }
 
     function copyPureVietnameseText() {
-      if (!lectureHistory.length) { alert("Chưa có nội dung dịch nào!"); return; }
-      let fullText = "1. Bản dịch tiếng Việt\nGiáo viên:\n\n";
-      lectureHistory.forEach(item => { fullText += `“${item.vi}”\n\n`; });
+      if (editedVietnameseParagraphs.length > 0) {
+        const fullText = `1. Bản dịch tiếng Việt\nGiáo viên:\n\n${editedVietnameseParagraphs.join('\n\n')}`;
+        navigator.clipboard.writeText(fullText);
+        showAppToast('Đã sao chép toàn bộ văn bản tiếng Việt!', 'saved');
+        return;
+      }
+      if (!lectureHistory.length) {
+        showAppToast('Chưa có nội dung dịch nào!', 'removed');
+        return;
+      }
+      const paragraphs = [];
+      for (let i = 0; i < lectureHistory.length; i += 4) {
+        const chunk = lectureHistory
+          .slice(i, i + 4)
+          .map((item) => String(item?.vi || '').replace(/^[“"«]+|[”"»]+$/g, '').trim())
+          .filter(Boolean)
+          .join(' ');
+        if (chunk) paragraphs.push(chunk);
+      }
+      const fullText = `1. Bản dịch tiếng Việt\nGiáo viên:\n\n${paragraphs.join('\n\n')}`;
       navigator.clipboard.writeText(fullText);
-      alert("Đã sao chép toàn bộ văn bản tiếng Việt!");
+      showAppToast('Đã sao chép toàn bộ văn bản tiếng Việt!', 'saved');
+    }
+
+    function openConfirmClearLiveModal() {
+      const modal = document.getElementById('confirmClearLiveModalOverlay');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeConfirmClearLiveModal() {
+      const modal = document.getElementById('confirmClearLiveModalOverlay');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmClearLiveTrans() {
+      closeConfirmClearLiveModal();
+      clearLiveTransHistory();
+      showAppToast('Đã xóa sạch bảng dịch trực tiếp.', 'removed');
+    }
+
+    function openPasteLectureModal() {
+      const modal = document.getElementById('pasteLectureModalOverlay');
+      const ta = document.getElementById('pasteLectureTextarea');
+      if (modal) modal.style.display = 'flex';
+      if (ta) {
+        ta.focus();
+      }
+    }
+
+    function closePasteLectureModal() {
+      const modal = document.getElementById('pasteLectureModalOverlay');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function pasteClipboardToModal() {
+      const ta = document.getElementById('pasteLectureTextarea');
+      if (!ta) return;
+      try {
+        if (!navigator.clipboard || typeof navigator.clipboard.readText !== 'function') {
+          showAppToast('Trình duyệt không hỗ trợ đọc Clipboard trực tiếp, hãy bấm giữ/Ctrl+V vào ô nhập.', 'removed');
+          ta.focus();
+          return;
+        }
+        const clipText = await navigator.clipboard.readText();
+        if (!clipText || !clipText.trim()) {
+          showAppToast('Clipboard hiện đang trống.', 'removed');
+          ta.focus();
+          return;
+        }
+        ta.value = clipText.trim();
+        ta.focus();
+        showAppToast('Đã dán nội dung từ Clipboard!', 'saved');
+      } catch (err) {
+        showAppToast('Vui lòng cho phép quyền Clipboard hoặc dán trực tiếp (Ctrl+V / Bấm giữ -> Dán) vào ô bên dưới.', 'removed');
+        ta.focus();
+      }
+    }
+
+    function submitPasteLectureText() {
+      const ta = document.getElementById('pasteLectureTextarea');
+      if (!ta) return;
+      const raw = ta.value.trim();
+      if (!raw) {
+        showAppToast('Vui lòng nhập hoặc dán văn bản tiếng Đức!', 'removed');
+        return;
+      }
+      const sentences = raw
+        .replace(/\r?\n+/g, ' ')
+        .split(/(?<=[.?!])\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length >= 2);
+      const list = sentences.length > 0 ? sentences : [raw];
+      ta.value = '';
+      closePasteLectureModal();
+      list.forEach((s) => commitLectureSentence(s));
+      flushProseBatchBuffer(true);
+      showAppToast(`Đã tiếp nhận ${list.length} câu tiếng Đức để dịch nhanh & biên tập mạch lạc!`, 'saved');
     }
 
     function clearLiveTransHistory() {
-      document.getElementById('vietnameseArticleBox').innerHTML = `<p style="color: #64748b; font-style: italic;">Đã xóa bảng dịch. Hãy bật mic để nghe giảng...</p>`;
+      liveSessionCounter++;
+      prosePendingChunks.length = 0;
+      proseBatchQueue.length = 0;
+      editedVietnameseParagraphs = [];
+      clearTimeout(proseBatchTimerId);
+      proseBatchTimerId = null;
+      groqUploadQueue.length = 0;
+      groqSegmentCounter = 0;
+      lastCommittedNorm = '';
+      lastCommittedAt = 0;
+      if (!isListeningRef) {
+        stopRecordingTimer(true);
+        updateGroqLiveStatus('');
+      }
+
+      const articleBox = document.getElementById('vietnameseArticleBox');
+      if (articleBox) {
+        articleBox.innerHTML = `<p class="vi-empty-placeholder" style="color: #64748b; font-style: italic;">Đã xóa bảng dịch. Hãy bật mic để nghe giảng...</p>`;
+      }
       const germanStream = document.getElementById('liveGermanStream');
       const vietStream = document.getElementById('liveVietStream');
-      if (germanStream) germanStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Nhấn nút "Bắt đầu lắng nghe bài giảng" và để thiết bị gần giáo viên...</p>`;
-      if (vietStream) vietStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Bản dịch tiếng Việt tương ứng sẽ tự động cập nhật ngay khi giáo viên dứt từng câu giảng.</p>`;
+      if (germanStream) {
+        germanStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Nhấn nút "Bắt đầu lắng nghe bài giảng" và để thiết bị gần giáo viên...</p>`;
+      }
+      if (vietStream) {
+        vietStream.innerHTML = `<p style="color: #64748b; font-style: italic;">Bản dịch tiếng Việt tương ứng sẽ tự động cập nhật ngay khi giáo viên dứt từng câu giảng.</p>`;
+      }
       lectureHistory = [];
     }
 
     function exportLectureNotes() {
-      if (!lectureHistory.length) { alert("Chưa có ghi chép nào!"); return; }
-      let content = "=== GHI CHÉP BÀI GIẢNG TIẾNG ĐỨC ===\n\n";
-      lectureHistory.forEach((it, i) => { content += `[${it.time}] Câu ${i + 1}:\nDE: ${it.de}\nVI: ${it.vi}\n\n`; });
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-      const a = document.createElement("a");
+      if (!lectureHistory.length) {
+        showAppToast('Chưa có ghi chép nào!', 'removed');
+        return;
+      }
+      let content = '=== GHI CHÉP BÀI GIẢNG TIẾNG ĐỨC ===\n\n';
+      lectureHistory.forEach((it, i) => {
+        content += `[${it.time}] Câu ${i + 1}:\nDE: ${it.de}\nVI: ${it.vi}\n\n`;
+      });
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `BaiGiang_${new Date().toISOString().slice(0,10)}.txt`;
+      a.download = `BaiGiang_${new Date().toISOString().slice(0, 10)}.txt`;
       a.click();
     }
 
@@ -2458,7 +3492,8 @@
         showAppToast('Chưa có nội dung bài giảng nào để tóm tắt!', 'removed');
         return;
       }
-      if (isClassroomListening) toggleClassroomListen();
+      if (isListeningRef) await toggleClassroomListen();
+      flushProseBatchBuffer(true);
 
       const summaryBox = document.getElementById('lectureSummaryBox');
       const loadingEl = document.getElementById('summaryLoadingState');
@@ -2911,7 +3946,9 @@
     // 7. UI NAVIGATION & DRAWER
     // ==========================================
     function toggleDesktopSidebar() {
-      document.querySelector('.app-viewport').classList.toggle('sidebar-collapsed');
+      const vp = document.querySelector('.app-viewport');
+      const collapsed = vp.classList.toggle('sidebar-collapsed');
+      document.body.classList.toggle('dm-sidebar-collapsed', collapsed);
     }
     function openMobileDrawer() {
       document.getElementById('appSidebar').classList.add('open');
@@ -2922,7 +3959,58 @@
       document.getElementById('mobileOverlay').classList.remove('active');
     }
 
+    window.toggleNewsFocusMode = function(forceState) {
+      const next = typeof forceState === 'boolean'
+        ? forceState
+        : !document.body.classList.contains('news-focus-mode');
+      document.body.classList.toggle('news-focus-mode', next);
+      const btn = document.getElementById('btnReaderFocusMode');
+      if (btn) {
+        if (next) {
+          btn.className = 'deck-btn btn-primary-ios';
+          btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+          btn.innerHTML = '<i class="fa-solid fa-compress"></i> Thoát Focus Mode';
+        } else {
+          btn.className = 'deck-btn btn-glass-subtle';
+          btn.style.background = '';
+          btn.innerHTML = '<i class="fa-solid fa-expand"></i> Focus Mode';
+        }
+      }
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const confirmClearModal = document.getElementById('confirmClearLiveModalOverlay');
+        if (confirmClearModal && confirmClearModal.style.display === 'flex') {
+          closeConfirmClearLiveModal();
+          return;
+        }
+        const pasteModal = document.getElementById('pasteLectureModalOverlay');
+        if (pasteModal && pasteModal.style.display === 'flex') {
+          closePasteLectureModal();
+          return;
+        }
+        const instModal = document.getElementById('aiInstructionsModalOverlay');
+        if (instModal && instModal.style.display === 'flex') {
+          window.closeAiInstructionsModal();
+          return;
+        }
+        const aiPopup = document.getElementById('dmAiPopup');
+        if (aiPopup && aiPopup.classList.contains('open')) {
+          window.toggleAiChatPopup(false);
+          return;
+        }
+        if (document.body.classList.contains('news-focus-mode')) {
+          const modal = document.getElementById('quickDictModalOverlay');
+          if (!modal || modal.style.display === 'none') {
+            window.toggleNewsFocusMode(false);
+          }
+        }
+      }
+    });
+
     function switchTab(tabId, clickedEl) {
+      window.toggleNewsFocusMode(false);
       document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       
@@ -2932,7 +4020,6 @@
       const titleMap = {
         'live-trans': { title: 'Mitschreiben & Übersetzen im Unterricht', desc: 'Mikrofon aktivieren, um die deutsche Erklärung der Lehrkraft automatisch aufzunehmen und ins Vietnamesische zu übersetzen.' },
         'listening': { title: 'Hörverstehen (3-Schritte-Methode)', desc: '1. Ohne Untertitel -> 2. Mit deutschem Skript -> 3. Ohne Text fließend verstehen (inkl. Deutsche Radiosender).' },
-        'shadowing': { title: 'Shadowing Studio (Aussprache & Intonation)', desc: 'Muttersprachliche Sätze in 20-40 Sekunden synchron nachsprechen, um Sprachmelodie und Akzent zu perfektionieren.' },
         'reading': { title: 'Leseverstehen & Đọc Báo Tiếng Đức Trực Tiếp (Reader View)', desc: 'Đọc tin tức mới nhất từ Tagesschau, DW, Nachrichtenleicht ngay trong ứng dụng • Bấm hoặc bôi đen từ bất kỳ để tra từ & lưu vào Sổ tay.' },
         'vocab': { title: 'Kollokationen & Feste Nomen-Verb-Verbindungen', desc: 'Wortverbindungen im authentischen Arbeits- und Alltagskontext cho B1/B2 và toàn bộ 5,243 từ vựng A1-C1.' },
         'routine': { title: 'Tagesplan (60 Minuten Intensiv-Lernen)', desc: 'Wissenschaftlich optimierte Zeitverteilung auf alle Kernkompetenzen für nachhaltigen Fortschritt.' },
@@ -2997,13 +4084,16 @@
 
     async function searchDictionaryWord() {
       const q = document.getElementById('dictSearchInput').value.trim();
-      if (!q) { alert("Vui lòng nhập từ tiếng Đức hoặc tiếng Việt cần tra!"); return; }
+      if (!q) {
+        showAppToast('Vui lòng nhập từ tiếng Đức hoặc tiếng Việt cần tra!', 'removed');
+        return;
+      }
 
       const lower = q.toLowerCase();
 
       // 1. Tìm trong kho B1/B2 offline trước (hỗ trợ cả tiếng Đức & tiếng Việt)
-      const localMatch = offlineVocabData.find(item => 
-        (item.word || '').toLowerCase() === lower || 
+      const localMatch = offlineVocabData.find(item =>
+        (item.word || '').toLowerCase() === lower ||
         (item.art && (item.art + " " + item.word).toLowerCase() === lower) ||
         (item.vi && item.vi.toLowerCase().includes(lower))
       );
@@ -3023,7 +4113,7 @@
         return;
       }
 
-      // 2. Tìm trong kho 5,243 từ allHubWords (hỗ trợ cả tiếng Đức & tiếng Việt)
+      // 2. Tìm trong kho 5.243 từ allHubWords (hỗ trợ cả tiếng Đức & tiếng Việt)
       if (typeof allHubWords !== 'undefined' && allHubWords.length > 0) {
         const hubMatch = allHubWords.find(item => {
           const matchDe = (item.de && item.de.toLowerCase() === lower) || (item.word && item.word.toLowerCase() === lower);
@@ -3036,7 +4126,7 @@
           const meaningKey = `de_${hubMatch.word || hubMatch.de}`;
           const fallbackKey = `en_${hubMatch.en}`;
           const viMeaning = (typeof VI_TRANSLATION_CACHE !== 'undefined' && (VI_TRANSLATION_CACHE[meaningKey] || VI_TRANSLATION_CACHE[fallbackKey])) || hubMatch.en || '';
-          
+
           const exKey = `de_${hubMatch.example}`;
           const viEx = (typeof VI_TRANSLATION_CACHE !== 'undefined' && VI_TRANSLATION_CACHE[exKey]) || hubMatch.exampleEn || '';
 
@@ -3049,56 +4139,84 @@
             level: hubMatch.level || 'B1/B2',
             topic: hubMatch.catVi || 'Tổng hợp',
             sentenceDe: hubMatch.example || `Ich verwende das Wort "${hubMatch.word || hubMatch.de}" oft.`,
-            sentenceVi: viEx || `Tôi thường sử dụng từ này trong thực tế.`
+            sentenceVi: viEx || 'Tôi thường sử dụng từ này trong thực tế.'
           });
           return;
         }
       }
 
-      // 3. Tra cứu trực tuyến 2 chiều thông minh qua Google GTX & AI
-      const btn = event && event.currentTarget ? event.currentTarget : null;
-      if (btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tra...`;
+      // 3. Từ không có sẵn trong 5.243 từ -> Gọi tự động API công khai Wiktionary tiếng Đức + dịch nghĩa Việt
+      const traCuuBtn = document.querySelector('#tab-dictionary button.btn-primary-ios');
+      if (traCuuBtn) traCuuBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tra Wiktionary...`;
+
+      const translateGtxHelper = async (text, sl, tl) => {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+        const r = await fetch(url);
+        if (!r.ok) return '';
+        const d = await r.json();
+        return Array.isArray(d && d[0])
+          ? d[0].map((seg) => (seg && seg[0] ? seg[0] : '')).join('').trim()
+          : '';
+      };
 
       try {
-        // Kiểm tra xem từ nhập vào là tiếng Việt hay tiếng Đức
-        // Nếu có dấu tiếng Việt hoặc từ điển tiếng Việt: dịch vi -> de; ngược lại: de -> vi
         const isVietnamese = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(q);
-        const sl = isVietnamese ? 'vi' : 'de';
-        const tl = isVietnamese ? 'de' : 'vi';
+        const deWord = isVietnamese ? await translateGtxHelper(q, 'vi', 'de') : q;
+        const cleanDeHeadword = deWord.replace(/^(der|die|das|ein|eine)\s+/i, '').trim();
 
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(q)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        let translatedText = "";
-        if (data && data[0]) {
-          data[0].forEach(seg => { if (seg && seg[0]) translatedText += seg[0]; });
+        const [wiktInfo, directVi] = await Promise.all([
+          typeof window.lookupGermanWiktionary === 'function' && !cleanDeHeadword.includes(' ')
+            ? window.lookupGermanWiktionary(cleanDeHeadword)
+            : Promise.resolve(null),
+          isVietnamese ? Promise.resolve(q) : translateGtxHelper(q, 'de', 'vi'),
+        ]);
+
+        let wiktDefsVi = '';
+        if (wiktInfo && Array.isArray(wiktInfo.definitionsDe) && wiktInfo.definitionsDe.length > 0) {
+          wiktDefsVi = await translateGtxHelper(wiktInfo.definitionsDe.slice(0, 2).join(' | '), 'de', 'vi');
         }
 
-        const deWord = isVietnamese ? translatedText : q;
-        const viMeaning = isVietnamese ? q : translatedText;
+        const displayWord = wiktInfo?.title || cleanDeHeadword || deWord;
+        const exampleDe =
+          (wiktInfo?.examplesDe && wiktInfo.examplesDe[0]) ||
+          `Ich habe das Wort "${displayWord}" im alltäglichen Gespräch gehört.`;
+        const exampleVi = await translateGtxHelper(exampleDe, 'de', 'vi');
 
-        const exampleDe = `Ich habe das Wort "${deWord}" im alltäglichen Gespräch gehört.`;
-        const exampleVi = await translateGermanToVietnamese(exampleDe);
+        const combinedVi =
+          wiktDefsVi && directVi && wiktDefsVi.toLowerCase() !== directVi.toLowerCase()
+            ? `${directVi} (${wiktDefsVi})`
+            : (directVi || wiktDefsVi || displayWord);
+
+        const grammarExtra = wiktInfo
+          ? [
+              wiktInfo.posLabel,
+              wiktInfo.inflectedNote,
+              wiktInfo.definitionsDe && wiktInfo.definitionsDe[0] ? `DE: ${wiktInfo.definitionsDe[0]}` : '',
+            ]
+              .filter(Boolean)
+              .join(' • ')
+          : isVietnamese
+          ? 'Dịch Việt ➔ Đức'
+          : 'Tra cứu mở rộng';
 
         displayDictResult({
-          art: '',
-          word: deWord,
-          plural: '',
-          phonetic: isVietnamese ? '/Tra từ Tiếng Việt ➔ Tiếng Đức/' : '/Wiktionary API/',
-          vi: viMeaning,
-          level: 'Tra cứu mở rộng',
-          topic: isVietnamese ? 'Dịch Việt ➔ Đức' : 'Dịch Đức ➔ Việt',
+          art: wiktInfo?.art || '',
+          word: displayWord,
+          plural: wiktInfo?.grammarSummary || '',
+          phonetic: wiktInfo?.ipa ? `IPA: ${wiktInfo.ipa}` : (wiktInfo ? '/de.wiktionary.org/' : '/Tra cứu mở rộng/'),
+          vi: combinedVi,
+          level: wiktInfo ? 'Wiktionary DE' : 'Tra cứu mở rộng',
+          topic: grammarExtra,
           sentenceDe: exampleDe,
-          sentenceVi: exampleVi
+          sentenceVi: exampleVi || 'Ví dụ ngữ cảnh tiếng Đức.'
         });
       } catch (err) {
-        alert("Lỗi kết nối tra từ điển: " + err.message);
+        showAppToast('Lỗi kết nối tra từ điển: ' + (err?.message || 'Vui lòng thử lại.'), 'removed');
       } finally {
-        const traCuuBtn = document.querySelector('#tab-dictionary button.btn-primary-ios');
         if (traCuuBtn) traCuuBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> Tra Cứu`;
       }
     }
-        function quickDictLookup(word) {
+    function quickDictLookup(word) {
       document.getElementById('dictSearchInput').value = word;
       searchDictionaryWord();
     }
@@ -3220,12 +4338,401 @@
       a.click();
     }
 
+    // ==========================================
+    // 10. TRỢ LÝ HỘI THOẠI ĐA LƯỢT (FLOATING KI-TUTOR + GEMINI 3.1 FLASH LITE + CHỈ DẪN CHO AI)
+    // ==========================================
+    const AI_INSTRUCTIONS_KEY = 'deutschprivate_ai_instructions_v1';
+    const AI_INSTRUCTIONS_ENABLED_KEY = 'deutschprivate_ai_instructions_enabled_v1';
+
+    const aiChatGreetings = {
+      tutor: 'Hallo! Tôi là Gia sư Tiếng Đức của DeutschPrivate (Gemini 3.1 Flash Lite). Bạn cần giải thích ngữ pháp, mạo từ der/die/das hay ví dụ câu nào hôm nay?',
+      partner: 'Hallo! Schön, dass du da bist. Wie geht es dir heute? Worüber möchten wir auf Deutsch sprechen?',
+      exam: 'Chào bạn! Hãy dán bài viết Schreiben hoặc chọn chủ đề Sprechen để tôi góp ý, sửa lỗi và bổ sung Redemittel chuẩn Goethe/telc.'
+    };
+    let aiChatMessages = [];
+    let aiChatSending = false;
+    let aiInstructionsList = [];
+    let aiInstructionsEnabled = true;
+    let openInstructionMenuIdx = -1;
+    let editingInstructionIdx = -1;
+    let aiPopupOpen = false;
+
+    window.toggleAiChatPopup = function(forceOpen) {
+      const next = typeof forceOpen === 'boolean' ? forceOpen : !aiPopupOpen;
+      aiPopupOpen = next;
+      const popup = document.getElementById('dmAiPopup');
+      const fab = document.getElementById('dmAiFab');
+      const fabIcon = document.getElementById('dmAiFabIcon');
+      if (popup) popup.classList.toggle('open', next);
+      if (fab) fab.classList.toggle('is-open', next);
+      if (fabIcon) {
+        fabIcon.className = next ? 'fa-solid fa-chevron-down' : 'fa-solid fa-comments';
+      }
+      if (next) {
+        renderAiChatThread();
+        setTimeout(() => {
+          document.getElementById('aiChatInput')?.focus();
+        }, 120);
+      }
+    };
+
+    function loadAiInstructionsFromStorage() {
+      try {
+        const rawList = localStorage.getItem(AI_INSTRUCTIONS_KEY);
+        const parsed = rawList ? JSON.parse(rawList) : [];
+        aiInstructionsList = Array.isArray(parsed)
+          ? parsed.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+      } catch (_e) {
+        aiInstructionsList = [];
+      }
+      try {
+        const rawEnabled = localStorage.getItem(AI_INSTRUCTIONS_ENABLED_KEY);
+        aiInstructionsEnabled = rawEnabled === null ? true : rawEnabled === 'true';
+      } catch (_e) {
+        aiInstructionsEnabled = true;
+      }
+      updateAiInstructionsBadge();
+    }
+
+    function saveAiInstructionsToStorage() {
+      try {
+        localStorage.setItem(AI_INSTRUCTIONS_KEY, JSON.stringify(aiInstructionsList));
+        localStorage.setItem(AI_INSTRUCTIONS_ENABLED_KEY, String(aiInstructionsEnabled));
+      } catch (_e) {}
+      updateAiInstructionsBadge();
+    }
+
+    function updateAiInstructionsBadge() {
+      const badge = document.getElementById('aiInstructionsBadge');
+      if (badge) {
+        if (aiInstructionsList.length > 0 && aiInstructionsEnabled) {
+          badge.textContent = `(${aiInstructionsList.length})`;
+          badge.style.color = '#34d399';
+        } else if (aiInstructionsList.length > 0) {
+          badge.textContent = '(tắt)';
+          badge.style.color = '#94a3b8';
+        } else {
+          badge.textContent = '';
+        }
+      }
+      const fabBadge = document.getElementById('dmAiFabBadge');
+      if (fabBadge) {
+        fabBadge.textContent =
+          aiInstructionsList.length > 0 && aiInstructionsEnabled ? `${aiInstructionsList.length}` : 'AI';
+      }
+    }
+
+    function renderAiInstructionsModalUI() {
+      const toggleBtn = document.getElementById('aiInstructionsToggleBtn');
+      const toggleKnob = document.getElementById('aiInstructionsToggleKnob');
+      const toggleLabel = document.getElementById('aiInstructionsToggleLabel');
+      if (toggleBtn && toggleKnob && toggleLabel) {
+        toggleBtn.setAttribute('aria-checked', String(aiInstructionsEnabled));
+        toggleBtn.style.background = aiInstructionsEnabled ? '#10b981' : '#334155';
+        toggleKnob.style.left = aiInstructionsEnabled ? '23px' : '3px';
+        toggleLabel.textContent = aiInstructionsEnabled ? 'Đang bật' : 'Đang tắt';
+        toggleLabel.style.color = aiInstructionsEnabled ? '#34d399' : '#94a3b8';
+      }
+
+      const container = document.getElementById('aiInstructionsCardsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (aiInstructionsList.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'padding: 32px 16px; text-align: center; border-radius: 14px; background: rgba(15, 23, 42, 0.55); border: 1px dashed rgba(255,255,255,0.12); color: #94a3b8; font-size: 0.88rem; line-height: 1.5;';
+        empty.innerHTML = 'Chưa có chỉ dẫn nào. Bấm nút <strong style="color:#60a5fa;">+ Thêm</strong> để tạo quy tắc riêng cho trợ lý AI.';
+        container.appendChild(empty);
+        return;
+      }
+
+      aiInstructionsList.forEach((ruleText, idx) => {
+        const card = document.createElement('div');
+        card.style.cssText = `position: relative; border-radius: 14px; background: #0f172a; border: 1px solid ${aiInstructionsEnabled ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)'}; padding: 13px 14px; opacity: ${aiInstructionsEnabled ? '1' : '0.6'};`;
+
+        if (editingInstructionIdx === idx) {
+          const ta = document.createElement('textarea');
+          ta.id = `aiInstructionEditInput_${idx}`;
+          ta.rows = 2;
+          ta.value = ruleText;
+          ta.style.cssText = 'width: 100%; padding: 9px 11px; border-radius: 10px; background: rgba(6, 10, 22, 0.9); border: 1px solid rgba(56, 189, 248, 0.5); color: #fff; font-size: 0.88rem; outline: none; resize: vertical; font-family: inherit;';
+
+          const btnRow = document.createElement('div');
+          btnRow.style.cssText = 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;';
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'deck-btn btn-glass-subtle';
+          cancelBtn.style.cssText = 'padding: 5px 12px; font-size: 0.78rem;';
+          cancelBtn.textContent = 'Hủy';
+          cancelBtn.onclick = () => {
+            editingInstructionIdx = -1;
+            renderAiInstructionsModalUI();
+          };
+
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'deck-btn btn-primary-ios';
+          saveBtn.style.cssText = 'padding: 5px 12px; font-size: 0.78rem; background: linear-gradient(135deg, #2563eb, #3b82f6);';
+          saveBtn.textContent = 'Lưu';
+          saveBtn.onclick = () => {
+            const val = ta.value.trim();
+            if (val) {
+              aiInstructionsList[idx] = val;
+              saveAiInstructionsToStorage();
+            }
+            editingInstructionIdx = -1;
+            renderAiInstructionsModalUI();
+          };
+
+          btnRow.appendChild(cancelBtn);
+          btnRow.appendChild(saveBtn);
+          card.appendChild(ta);
+          card.appendChild(btnRow);
+        } else {
+          const row = document.createElement('div');
+          row.style.cssText = 'display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;';
+
+          const txt = document.createElement('div');
+          txt.style.cssText = 'flex: 1; font-size: 0.9rem; color: #f1f5f9; line-height: 1.5; white-space: pre-wrap; word-break: break-word;';
+          txt.textContent = ruleText;
+
+          const menuWrap = document.createElement('div');
+          menuWrap.style.cssText = 'position: relative; flex-shrink: 0;';
+
+          const dotsBtn = document.createElement('button');
+          dotsBtn.type = 'button';
+          dotsBtn.title = 'Tùy chọn';
+          dotsBtn.style.cssText = 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid transparent; background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer; display: grid; place-items: center;';
+          dotsBtn.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+          dotsBtn.onclick = (e) => {
+            e.stopPropagation();
+            openInstructionMenuIdx = openInstructionMenuIdx === idx ? -1 : idx;
+            renderAiInstructionsModalUI();
+          };
+
+          menuWrap.appendChild(dotsBtn);
+
+          if (openInstructionMenuIdx === idx) {
+            const pop = document.createElement('div');
+            pop.style.cssText = 'position: absolute; right: 0; top: 34px; z-index: 30; min-width: 132px; border-radius: 12px; background: #1e293b; border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 12px 30px rgba(0,0,0,0.6); padding: 5px; display: flex; flex-direction: column; gap: 2px;';
+
+            const editOpt = document.createElement('button');
+            editOpt.type = 'button';
+            editOpt.style.cssText = 'width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; border: none; background: transparent; color: #e2e8f0; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 8px;';
+            editOpt.innerHTML = '<i class="fa-regular fa-pen-to-square" style="color: #60a5fa;"></i> Chỉnh sửa';
+            editOpt.onmouseover = () => { editOpt.style.background = 'rgba(255,255,255,0.08)'; };
+            editOpt.onmouseout = () => { editOpt.style.background = 'transparent'; };
+            editOpt.onclick = (e) => {
+              e.stopPropagation();
+              openInstructionMenuIdx = -1;
+              editingInstructionIdx = idx;
+              renderAiInstructionsModalUI();
+            };
+
+            const delOpt = document.createElement('button');
+            delOpt.type = 'button';
+            delOpt.style.cssText = 'width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; border: none; background: transparent; color: #fca5a5; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 8px;';
+            delOpt.innerHTML = '<i class="fa-regular fa-trash-can" style="color: #f87171;"></i> Xóa';
+            delOpt.onmouseover = () => { delOpt.style.background = 'rgba(239,68,68,0.15)'; };
+            delOpt.onmouseout = () => { delOpt.style.background = 'transparent'; };
+            delOpt.onclick = (e) => {
+              e.stopPropagation();
+              openInstructionMenuIdx = -1;
+              aiInstructionsList.splice(idx, 1);
+              saveAiInstructionsToStorage();
+              renderAiInstructionsModalUI();
+            };
+
+            pop.appendChild(editOpt);
+            pop.appendChild(delOpt);
+            menuWrap.appendChild(pop);
+          }
+
+          row.appendChild(txt);
+          row.appendChild(menuWrap);
+          card.appendChild(row);
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    window.openAiInstructionsModal = function() {
+      openInstructionMenuIdx = -1;
+      editingInstructionIdx = -1;
+      const modal = document.getElementById('aiInstructionsModalOverlay');
+      if (modal) {
+        modal.style.display = 'flex';
+        renderAiInstructionsModalUI();
+      }
+    };
+
+    window.closeAiInstructionsModal = function() {
+      openInstructionMenuIdx = -1;
+      editingInstructionIdx = -1;
+      const modal = document.getElementById('aiInstructionsModalOverlay');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.toggleAiInstructionsEnabled = function() {
+      aiInstructionsEnabled = !aiInstructionsEnabled;
+      saveAiInstructionsToStorage();
+      renderAiInstructionsModalUI();
+    };
+
+    window.openAddAiInstructionForm = function() {
+      const box = document.getElementById('aiInstructionAddBox');
+      const ta = document.getElementById('aiInstructionNewInput');
+      if (box) box.style.display = 'block';
+      if (ta) {
+        ta.value = '';
+        ta.focus();
+      }
+    };
+
+    window.cancelAddAiInstructionForm = function() {
+      const box = document.getElementById('aiInstructionAddBox');
+      if (box) box.style.display = 'none';
+    };
+
+    window.saveNewAiInstruction = function() {
+      const ta = document.getElementById('aiInstructionNewInput');
+      const box = document.getElementById('aiInstructionAddBox');
+      if (!ta) return;
+      const text = ta.value.trim();
+      if (!text) return;
+      aiInstructionsList.unshift(text);
+      saveAiInstructionsToStorage();
+      ta.value = '';
+      if (box) box.style.display = 'none';
+      renderAiInstructionsModalUI();
+    };
+
+    window.clearAllAiInstructions = function() {
+      aiInstructionsList = [];
+      openInstructionMenuIdx = -1;
+      editingInstructionIdx = -1;
+      saveAiInstructionsToStorage();
+      renderAiInstructionsModalUI();
+    };
+
+    function speakAiGermanResponse(text) {
+      const clean = String(text || '')
+        .replace(/[*_`#>]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean) speakText(clean);
+    }
+
+    function renderAiChatThread() {
+      const box = document.getElementById('aiChatThread');
+      if (!box) return;
+      box.innerHTML = '';
+
+      const roleSel = document.getElementById('aiChatRoleSelect');
+      const roleKey = roleSel ? roleSel.value : 'tutor';
+
+      const greetBubble = document.createElement('div');
+      greetBubble.style.cssText = 'align-self: flex-start; max-width: 88%; padding: 10px 13px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; font-size: 0.86rem; line-height: 1.5;';
+      greetBubble.textContent = aiChatGreetings[roleKey] || aiChatGreetings.tutor;
+      box.appendChild(greetBubble);
+
+      aiChatMessages.forEach((m) => {
+        const isUser = m.role === 'user';
+        const wrap = document.createElement('div');
+        wrap.style.cssText = `align-self: ${isUser ? 'flex-end' : 'flex-start'}; max-width: 88%; padding: 10px 13px; border-radius: 14px; font-size: 0.86rem; line-height: 1.55; white-space: pre-wrap; ${
+          isUser
+            ? 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.25)); border: 1px solid rgba(16, 185, 129, 0.45); color: #ffffff;'
+            : 'background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.28); color: #f1f5f9;'
+        }`;
+        wrap.textContent = m.text;
+        if (!isUser) {
+          const actRow = document.createElement('div');
+          actRow.style.cssText = 'margin-top: 7px; display: flex; justify-content: flex-end;';
+          const spkBtn = document.createElement('button');
+          spkBtn.className = 'deck-btn btn-glass-subtle';
+          spkBtn.style.cssText = 'padding: 3px 9px; font-size: 0.72rem; border-radius: 8px;';
+          spkBtn.title = 'Phát âm tiếng Đức (de-DE)';
+          spkBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Nghe phát âm (de-DE)';
+          spkBtn.onclick = () => speakAiGermanResponse(m.text);
+          actRow.appendChild(spkBtn);
+          wrap.appendChild(actRow);
+        }
+        box.appendChild(wrap);
+      });
+
+      if (aiChatSending) {
+        const loadingBubble = document.createElement('div');
+        loadingBubble.style.cssText = 'align-self: flex-start; padding: 9px 12px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); color: #7dd3fc; font-size: 0.82rem;';
+        loadingBubble.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang phản hồi (Gemini 3.1 Flash Lite)...';
+        box.appendChild(loadingBubble);
+      }
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    window.initAiChatThread = function() {
+      renderAiChatThread();
+    };
+
+    window.resetAiChatWithRole = function() {
+      aiChatMessages = [];
+      renderAiChatThread();
+    };
+
+    window.sendAiChatMessage = async function() {
+      const input = document.getElementById('aiChatInput');
+      if (!input || aiChatSending) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const roleKey = document.getElementById('aiChatRoleSelect')?.value || 'tutor';
+
+      aiChatMessages.push({ role: 'user', text });
+      input.value = '';
+      aiChatSending = true;
+      renderAiChatThread();
+
+      // Sliding window: chỉ gửi tối đa 10 tin nhắn gần nhất để tránh vượt 16K TPM
+      const recent10Messages = aiChatMessages.slice(-10);
+      const activeCustomRules = aiInstructionsEnabled ? aiInstructionsList : [];
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: recent10Messages,
+            roleKey,
+            customInstructions: activeCustomRules
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.error || 'Không thể kết nối Trợ lý AI.');
+        }
+        aiChatMessages.push({ role: 'model', text: data.reply || '' });
+      } catch (err) {
+        aiChatMessages.push({
+          role: 'model',
+          text: `Lỗi: ${err?.message || 'Không thể kết nối máy chủ AI.'}`
+        });
+      } finally {
+        aiChatSending = false;
+        renderAiChatThread();
+      }
+    };
+
     // Tự động khởi tạo dữ liệu ban đầu
     window.addEventListener('DOMContentLoaded', () => {
+      loadAiInstructionsFromStorage();
       loadNewsArticle(0, null);
       renderDailySpeakingScenarios();
       updateFavBadge();
       updateCollocHeartUI();
+      renderAiChatThread();
     });
   </script>
 </body>

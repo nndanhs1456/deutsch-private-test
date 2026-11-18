@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Newspaper,
   BookOpen,
@@ -6,21 +6,51 @@ import {
   Eye,
   EyeOff,
   MessageSquare,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { NEWS_ARTICLES, MANGA_EPISODES, NewsArticle, MangaEpisode } from '../data/deutschData';
 import { speechEngine } from '../utils/speech';
 
 interface NewsMangaReaderViewProps {
   onSelectWord: (word: string, sentence: string) => void;
+  isFocusMode?: boolean;
+  onToggleFocusMode?: () => void;
 }
 
-export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSelectWord }) => {
+export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({
+  onSelectWord,
+  isFocusMode,
+  onToggleFocusMode,
+}) => {
   const [readerMode, setReaderMode] = useState<'news' | 'manga'>('news');
   const [selectedArticleId, setSelectedArticleId] = useState<string>(NEWS_ARTICLES[0].id);
   const [selectedMangaId, setSelectedMangaId] = useState<string>(MANGA_EPISODES[0].id);
   const [showVietnamese, setShowVietnamese] = useState<boolean>(true);
   const [showGrammarNotes, setShowGrammarNotes] = useState<boolean>(true);
   const [mangaLangMode, setMangaLangMode] = useState<'bilingual' | 'de_only' | 'vi_only'>('bilingual');
+  const [internalFocusMode, setInternalFocusMode] = useState<boolean>(false);
+
+  const focusActive = typeof isFocusMode === 'boolean' ? isFocusMode : internalFocusMode;
+
+  const handleToggleFocus = () => {
+    if (onToggleFocusMode) {
+      onToggleFocusMode();
+    } else {
+      setInternalFocusMode((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    if (!focusActive) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleToggleFocus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusActive, onToggleFocusMode]);
 
   const currentArticle: NewsArticle =
     NEWS_ARTICLES.find((a) => a.id === selectedArticleId) || NEWS_ARTICLES[0];
@@ -45,89 +75,117 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
     <div className="space-y-6">
       {/* Top Mode Switcher & Reader Controls */}
       <div className="flex flex-col gap-4 rounded-xl border border-slate-800/90 bg-[#0d1424] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-        <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
-          <button
-            type="button"
-            onClick={() => setReaderMode('news')}
-            className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 sm:flex-initial ${
-              readerMode === 'news'
-                ? 'bg-emerald-600 text-white'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Newspaper className="h-4 w-4" />
-            <span>Báo Đức Song Ngữ (B1–C1)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setReaderMode('manga')}
-            className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 sm:flex-initial ${
-              readerMode === 'manga'
-                ? 'bg-emerald-600 text-white'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <BookOpen className="h-4 w-4" />
-            <span>Manga & Hội Thoại Đời Thường</span>
-          </button>
-        </div>
-
-        {readerMode === 'news' ? (
-          <div className="flex flex-wrap items-center gap-2">
+        {!focusActive ? (
+          <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
             <button
               type="button"
-              onClick={() => setShowVietnamese((p) => !p)}
-              className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                showVietnamese
-                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                  : 'border-slate-800 bg-[#080d1a] text-slate-400 hover:text-slate-200'
+              onClick={() => setReaderMode('news')}
+              className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 sm:flex-initial ${
+                readerMode === 'news'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              {showVietnamese ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-              <span>Bản dịch tiếng Việt</span>
+              <Newspaper className="h-4 w-4" />
+              <span>Báo Đức Song Ngữ (B1–C1)</span>
             </button>
-
             <button
               type="button"
-              onClick={() => setShowGrammarNotes((p) => !p)}
-              className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                showGrammarNotes
-                  ? 'border-sky-500/40 bg-sky-500/10 text-sky-300'
-                  : 'border-slate-800 bg-[#080d1a] text-slate-400 hover:text-slate-200'
+              onClick={() => setReaderMode('manga')}
+              className={`flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 sm:flex-initial ${
+                readerMode === 'manga'
+                  ? 'bg-emerald-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <span>Điểm ngữ pháp báo chí</span>
+              <BookOpen className="h-4 w-4" />
+              <span>Manga & Hội Thoại Đời Thường</span>
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
-            {[
-              { id: 'bilingual', label: 'Song Ngữ' },
-              { id: 'de_only', label: 'Chỉ Tiếng Đức' },
-              { id: 'vi_only', label: 'Chỉ Tiếng Việt' },
-            ].map((mode) => (
-              <button
-                key={mode.id}
-                type="button"
-                onClick={() => setMangaLangMode(mode.id as 'bilingual' | 'de_only' | 'vi_only')}
-                className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                  mangaLangMode === mode.id
-                    ? 'bg-slate-800 text-emerald-400'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {mode.label}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 text-xs font-medium text-emerald-300">
+            <BookOpen className="h-4 w-4" />
+            <span>Chế độ tập trung đọc — Nhấp vào từ bất kỳ để tra nghĩa</span>
           </div>
         )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          {readerMode === 'news' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowVietnamese((p) => !p)}
+                className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                  showVietnamese
+                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                    : 'border-slate-800 bg-[#080d1a] text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {showVietnamese ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                <span>Bản dịch tiếng Việt</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGrammarNotes((p) => !p)}
+                className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                  showGrammarNotes
+                    ? 'border-sky-500/40 bg-sky-500/10 text-sky-300'
+                    : 'border-slate-800 bg-[#080d1a] text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span>Điểm ngữ pháp báo chí</span>
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
+              {[
+                { id: 'bilingual', label: 'Song Ngữ' },
+                { id: 'de_only', label: 'Chỉ Tiếng Đức' },
+                { id: 'vi_only', label: 'Chỉ Tiếng Việt' },
+              ].map((mode) => (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setMangaLangMode(mode.id as 'bilingual' | 'de_only' | 'vi_only')}
+                  className={`min-h-[36px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                    mangaLangMode === mode.id
+                      ? 'bg-slate-800 text-emerald-400'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleToggleFocus}
+            aria-pressed={focusActive}
+            data-testid="focus-mode-btn"
+            className={`flex min-h-[40px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+              focusActive
+                ? 'border-emerald-400/60 bg-emerald-600 text-white hover:bg-emerald-500'
+                : 'border-slate-700 bg-[#080d1a] text-slate-200 hover:border-emerald-500/50 hover:text-emerald-300'
+            }`}
+          >
+            {focusActive ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span>{focusActive ? 'Thoát Focus Mode' : 'Focus Mode'}</span>
+          </button>
+        </div>
       </div>
 
       {/* MODE 1: GERMAN BILINGUAL NEWS READER */}
       {readerMode === 'news' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-          {/* Article Body (8 cols on lg) */}
-          <article className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-5 sm:p-8 lg:col-span-8">
+        <div className={focusActive ? 'mx-auto max-w-4xl' : 'grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8'}>
+          {/* Article Body */}
+          <article
+            className={`rounded-xl border border-slate-800/90 bg-[#0d1424] ${
+              focusActive ? 'p-6 sm:p-10' : 'p-5 sm:p-8 lg:col-span-8'
+            }`}
+          >
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-semibold text-emerald-400">{currentArticle.source}</span>
               <span aria-hidden="true">·</span>
@@ -138,17 +196,23 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
               <span>{currentArticle.readTime}</span>
             </div>
 
-            <h2 className="mt-3 text-2xl font-bold leading-snug tracking-tight text-slate-100 sm:text-3xl">
+            <h2
+              className={`mt-3 font-bold tracking-tight text-slate-100 ${
+                focusActive
+                  ? 'text-3xl leading-[1.35] sm:text-4xl'
+                  : 'text-2xl leading-snug sm:text-3xl'
+              }`}
+            >
               {renderClickableGerman(currentArticle.titleDe)}
             </h2>
             {showVietnamese && (
-              <p className="mt-2 text-base font-medium text-emerald-300">
+              <p className={`mt-2 font-medium text-emerald-300 ${focusActive ? 'text-lg leading-relaxed' : 'text-base'}`}>
                 {currentArticle.titleVi}
               </p>
             )}
 
             {/* Lead Paragraph */}
-            <div className="mt-6 rounded-xl border border-slate-800/90 bg-[#080d1a] p-4 sm:p-5">
+            <div className="mt-6 rounded-xl border border-slate-800/90 bg-[#080d1a] p-4 sm:p-6">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-medium text-slate-400">Tóm tắt mở đầu (Vorspann)</span>
                 <button
@@ -160,18 +224,24 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
                   <span>Nghe đoạn mở đầu</span>
                 </button>
               </div>
-              <p className="mt-2.5 text-base font-semibold leading-relaxed text-slate-100 sm:text-lg">
+              <p
+                className={`mt-3 font-semibold text-slate-100 ${
+                  focusActive
+                    ? 'text-xl leading-[2.05] sm:text-[1.35rem]'
+                    : 'text-base leading-relaxed sm:text-lg'
+                }`}
+              >
                 {renderClickableGerman(currentArticle.leadDe)}
               </p>
               {showVietnamese && (
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                <p className={`mt-2.5 text-slate-300 ${focusActive ? 'text-base leading-loose' : 'text-sm leading-relaxed'}`}>
                   {currentArticle.leadVi}
                 </p>
               )}
             </div>
 
             {/* Article Paragraphs */}
-            <div className="mt-6 space-y-6">
+            <div className={focusActive ? 'mt-8 space-y-8' : 'mt-6 space-y-6'}>
               {currentArticle.paragraphs.map((para, idx) => (
                 <div
                   key={idx}
@@ -191,12 +261,22 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
                     </button>
                   </div>
 
-                  <p className="mt-2 text-base leading-relaxed text-slate-100 sm:text-lg">
+                  <p
+                    className={`mt-2.5 text-slate-100 ${
+                      focusActive
+                        ? 'text-xl leading-[2.1] tracking-[0.01em] sm:text-[1.35rem]'
+                        : 'text-base leading-relaxed sm:text-lg'
+                    }`}
+                  >
                     {renderClickableGerman(para.de)}
                   </p>
 
                   {showVietnamese && (
-                    <p className="mt-2.5 text-sm leading-relaxed text-emerald-300/90">
+                    <p
+                      className={`mt-3 text-emerald-300/90 ${
+                        focusActive ? 'text-base leading-loose' : 'text-sm leading-relaxed'
+                      }`}
+                    >
                       {para.vi}
                     </p>
                   )}
@@ -212,8 +292,9 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
             </div>
           </article>
 
-          {/* Sidebar Article Selector (4 cols on lg) */}
-          <aside className="space-y-4 lg:col-span-4">
+          {/* Sidebar Article Selector (hidden in Focus Mode) */}
+          {!focusActive && (
+            <aside className="space-y-4 lg:col-span-4">
             <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-4 sm:p-5">
               <h3 className="text-base font-bold text-slate-100">Chuyên Mục Báo Đức Hôm Nay</h3>
               <p className="mt-1 text-xs text-slate-400">
@@ -254,13 +335,14 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
               </div>
             </div>
           </aside>
+          )}
         </div>
       )}
 
       {/* MODE 2: MANGA / GRAPHIC DIALOGUE READER */}
       {readerMode === 'manga' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-          <div className="space-y-6 lg:col-span-8">
+        <div className={focusActive ? 'mx-auto max-w-4xl' : 'grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8'}>
+          <div className={focusActive ? 'space-y-6' : 'space-y-6 lg:col-span-8'}>
             <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-5 sm:p-6">
               <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
                 <span className="font-mono font-semibold text-emerald-400">
@@ -332,13 +414,21 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
                         </div>
 
                         {mangaLangMode !== 'vi_only' && (
-                          <p className="mt-2.5 text-base font-semibold leading-relaxed text-slate-100 sm:text-lg">
+                          <p
+                            className={`mt-2.5 font-semibold text-slate-100 ${
+                              focusActive
+                                ? 'text-xl leading-[2.05] sm:text-[1.35rem]'
+                                : 'text-base leading-relaxed sm:text-lg'
+                            }`}
+                          >
                             {renderClickableGerman(dlg.de)}
                           </p>
                         )}
 
                         {mangaLangMode !== 'de_only' && (
-                          <p className="mt-1.5 text-sm text-emerald-300/95">{dlg.vi}</p>
+                          <p className={`mt-1.5 text-emerald-300/95 ${focusActive ? 'text-base leading-loose' : 'text-sm'}`}>
+                            {dlg.vi}
+                          </p>
                         )}
 
                         <div className="mt-3 border-t border-slate-800/80 pt-2 text-xs text-slate-400">
@@ -353,8 +443,9 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
             </div>
           </div>
 
-          {/* Right Manga Episode Selector */}
-          <aside className="space-y-4 lg:col-span-4">
+          {/* Right Manga Episode Selector (hidden in Focus Mode) */}
+          {!focusActive && (
+            <aside className="space-y-4 lg:col-span-4">
             <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-4 sm:p-5">
               <h3 className="text-base font-bold text-slate-100">Danh Sách Tập Truyện Đời Thường</h3>
               <p className="mt-1 text-xs text-slate-400">
@@ -391,6 +482,7 @@ export const NewsMangaReaderView: React.FC<NewsMangaReaderViewProps> = ({ onSele
               </div>
             </div>
           </aside>
+          )}
         </div>
       )}
     </div>

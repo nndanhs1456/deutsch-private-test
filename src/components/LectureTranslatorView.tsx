@@ -1,19 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Volume2,
-  Square,
-  Sparkles,
-  BookOpen,
-  Languages,
-  BookmarkPlus,
-  Check,
-  Loader2,
   Mic,
   MicOff,
-  RotateCcw,
+  Sparkles,
+  Download,
+  Trash2,
+  ClipboardPaste,
+  Clock,
+  Volume2,
+  Loader2,
+  X,
+  FileText,
 } from 'lucide-react';
-import { LectureItem, PRELOADED_LECTURES, VocabItem } from '../data/deutschData';
 import { speechEngine } from '../utils/speech';
+import { VocabItem } from '../data/deutschData';
+
+interface LectureSegment {
+  id: string;
+  de: string;
+  vi: string;
+  isNote?: boolean;
+}
 
 interface LectureTranslatorViewProps {
   onSelectWord: (word: string, sentence: string) => void;
@@ -26,569 +33,793 @@ export const LectureTranslatorView: React.FC<LectureTranslatorViewProps> = ({
   onSaveVocab,
   savedVocab,
 }) => {
-  const [lectures, setLectures] = useState<LectureItem[]>(PRELOADED_LECTURES);
-  const [selectedLectureId, setSelectedLectureId] = useState<string>(PRELOADED_LECTURES[0].id);
-  const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
-  const [isPlayingAll, setIsPlayingAll] = useState(false);
-  const [speechRate, setSpeechRate] = useState<number>(0.95);
-  const [showLiteralChunk, setShowLiteralChunk] = useState<boolean>(true);
-  const [showGrammarNote, setShowGrammarNote] = useState<boolean>(true);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(0);
+  const timerRef = useRef<any>(null);
+  const wakeLockRef = useRef<any>(null);
+  const isListeningRef = useRef<boolean>(false);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const activeRecorderRef = useRef<MediaRecorder | null>(null);
+  const rotationTimerRef = useRef<any>(null);
+  const mimeTypeRef = useRef<string>('audio/webm');
+  const seqCounterRef = useRef<number>(0);
+  const uploadQueueRef = useRef<Array<{ blob: Blob; mimeType: string; seqNum: number }>>([]);
+  const isUploadingRef = useRef<boolean>(false);
+  const [liveStatusText, setLiveStatusText] = useState<string>('');
+  const [pendingSentences, setPendingSentences] = useState<string[]>([]);
 
-  // Custom Lecture / Live Transcript Input state
-  const [customText, setCustomText] = useState<string>('');
-  const [targetLevel, setTargetLevel] = useState<'B1' | 'B2' | 'C1'>('B2');
-  const [isTranslating, setIsTranslating] = useState<boolean>(false);
-  const [translateError, setTranslateError] = useState<string | null>(null);
-  const [isListeningDictation, setIsListeningDictation] = useState<boolean>(false);
+  const [segments, setSegments] = useState<LectureSegment[]>([]);
+  const [pasteModalOpen, setPasteModalOpen] = useState<boolean>(false);
+  const [pasteText, setPasteText] = useState<string>('');
+  const [confirmClearOpen, setConfirmClearOpen] = useState<boolean>(false);
 
-  const currentLecture = lectures.find((l) => l.id === selectedLectureId) || lectures[0];
+  const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
+  const [summaryData, setSummaryData] = useState<any>(null);
+  const [summaryModalOpen, setSummaryModalOpen] = useState<boolean>(false);
 
-  const handlePlaySegment = (segmentId: string, textDe: string) => {
-    if (activeSegmentId === segmentId && speechEngine.isSpeaking()) {
-      speechEngine.stop();
-      setActiveSegmentId(null);
-      setIsPlayingAll(false);
-      return;
-    }
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
 
-    setIsPlayingAll(false);
-    setActiveSegmentId(segmentId);
-    speechEngine.speak(textDe, {
-      rate: speechRate,
-      onEnd: () => {
-        setActiveSegmentId(null);
-      },
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [segments]);
+
+  // Tiến trình chạy nền độc lập xử lý dịch câu mới mà không làm chậm onresult của micro
+  useEffect(() => {
+    if (pendingSentences.length === 0) return;
+    const queueCopy = [...pendingSentences];
+    setPendingSentences([]);
+    queueCopy.forEach((sentence) => {
+      handleAddGermanSentence(sentence);
     });
+  }, [pendingSentences]);
+
+  // Screen Wake Lock
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+      }
+    } catch {}
   };
 
-  const handlePlayEntireLecture = () => {
-    if (isPlayingAll) {
-      speechEngine.stop();
-      setIsPlayingAll(false);
-      setActiveSegmentId(null);
-      return;
+  const releaseWakeLock = async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
+    } catch {}
+  };
+
+  // Google Translate GTX helper with context
+  const translateSentenceLive = async (text: string, contextPrevious: string[] = []) => {
+    try {
+      const clean = text.trim();
+      if (!clean) return '';
+      const directUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=vi&dt=t&q=${encodeURIComponent(clean)}`;
+      const directRes = await fetch(directUrl);
+      if (directRes.ok) {
+        const directData = await directRes.json();
+        return Array.isArray(directData && directData[0])
+          ? directData[0].map((item: any) => (item && item[0] ? item[0] : '')).join('').trim()
+          : clean;
+      }
+      return clean;
+    } catch {
+      return text;
+    }
+  };
+
+  const handleAddGermanSentence = async (deSentence: string) => {
+    const trimmed = deSentence.trim();
+    if (!trimmed) return;
+
+    const recentDe = segments.slice(-3).map(s => s.de);
+    const translatedVi = await translateSentenceLive(trimmed, recentDe);
+
+    const isNote = /wichtig|prüfung|achtung|hausaufgabe|notiz|tipp|dặn|thi cử|lưu ý/i.test(trimmed) || /lưu ý/i.test(translatedVi);
+
+    setSegments((prev) => [
+      ...prev,
+      {
+        id: `seg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        de: trimmed,
+        vi: translatedVi,
+        isNote,
+      },
+    ]);
+  };
+
+  const getGroqApiKey = () => {
+    const envKey = (
+      (typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_GROQ_API_KEY : '') ||
+      (typeof process !== 'undefined' ? (process as any).env?.VITE_GROQ_API_KEY : '') ||
+      ''
+    )
+      .toString()
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
+    if (envKey) return envKey;
+
+    let storedKey = '';
+    try {
+      storedKey = localStorage.getItem('VITE_GROQ_API_KEY') || localStorage.getItem('groq_api_key') || '';
+    } catch {}
+    return String(storedKey || '')
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim();
+  };
+
+  const pickWebmMimeType = () => {
+    if (typeof MediaRecorder === 'undefined') return '';
+    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    for (const mime of candidates) {
+      try {
+        if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mime)) {
+          return mime;
+        }
+      } catch {}
+    }
+    return '';
+  };
+
+  const isIgnorableGroqTranscript = (text: string) => {
+    const clean = String(text || '').trim();
+    if (!clean) return true;
+    if (!/[a-zA-ZäöüßÄÖÜ0-9]/.test(clean)) return true;
+    const strippedLetters = clean.replace(/[^a-zA-ZäöüßÄÖÜ0-9]/g, '');
+    return strippedLetters.length < 2;
+  };
+
+  const blobToBase64 = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const res = String(reader.result || '');
+        const commaIdx = res.indexOf(',');
+        resolve(commaIdx >= 0 ? res.slice(commaIdx + 1) : res);
+      };
+      reader.onerror = () => reject(new Error('Không thể đọc dữ liệu âm thanh.'));
+      reader.readAsDataURL(blob);
+    });
+
+  const transcribeBlobWithGroq = async (audioBlob: Blob, mimeType: string): Promise<string> => {
+    const groqKey = getGroqApiKey();
+    const cleanMime = (mimeType || audioBlob.type || 'audio/webm').split(';')[0].trim() || 'audio/webm';
+    const ext = cleanMime.includes('mp4') ? 'm4a' : cleanMime.includes('ogg') ? 'ogg' : 'webm';
+
+    if (groqKey) {
+      const formData = new FormData();
+      formData.append('file', audioBlob, `lecture_${Date.now()}.${ext}`);
+      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('language', 'de');
+      formData.append('response_format', 'json');
+
+      const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${groqKey}`,
+        },
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `Lỗi Groq Whisper (${res.status})`);
+      }
+      return String(data?.text || '').trim();
     }
 
-    const segments = currentLecture.segments;
-    if (!segments.length) return;
+    const audioBase64 = await blobToBase64(audioBlob);
+    const proxyRes = await fetch('/api/groq-transcribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audioBase64, mimeType: cleanMime }),
+    });
+    const proxyData = await proxyRes.json().catch(() => ({}));
+    if (!proxyRes.ok) {
+      throw new Error(proxyData?.error || `Lỗi Groq Whisper (${proxyRes.status})`);
+    }
+    return String(proxyData?.text || '').trim();
+  };
 
-    setIsPlayingAll(true);
-    let index = 0;
-
-    const playNext = () => {
-      if (index >= segments.length) {
-        setIsPlayingAll(false);
-        setActiveSegmentId(null);
-        return;
+  const processGroqQueue = async () => {
+    if (isUploadingRef.current) return;
+    isUploadingRef.current = true;
+    try {
+      while (uploadQueueRef.current.length > 0) {
+        const item = uploadQueueRef.current.shift();
+        if (!item) continue;
+        setLiveStatusText(`Đang thu âm & chuyển âm gói #${item.seqNum} qua Groq Whisper...`);
+        try {
+          const text = await transcribeBlobWithGroq(item.blob, item.mimeType);
+          if (!isIgnorableGroqTranscript(text)) {
+            const sentences = text
+              .replace(/\s+/g, ' ')
+              .split(/(?<=[.?!])\s+/)
+              .map((s) => s.trim())
+              .filter((s) => !isIgnorableGroqTranscript(s));
+            const finalList = sentences.length > 0 ? sentences : [text];
+            setPendingSentences((prev) => [...prev, ...finalList]);
+          }
+        } catch (err: any) {
+          setLiveStatusText(`Lỗi Groq Whisper (gói #${item.seqNum}): ${err?.message || 'Thất bại'}`);
+        }
       }
-      const seg = segments[index];
-      setActiveSegmentId(seg.id);
-      speechEngine.speak(seg.de, {
-        rate: speechRate,
-        onEnd: () => {
-          index += 1;
-          playNext();
-        },
-      });
+    } finally {
+      isUploadingRef.current = false;
+      if (uploadQueueRef.current.length > 0) {
+        processGroqQueue();
+      } else if (isListeningRef.current) {
+        setLiveStatusText('Đang thu âm liên tục qua Groq Whisper (gửi gói mỗi 12 giây)...');
+      } else {
+        setLiveStatusText('');
+      }
+    }
+  };
+
+  const startNewSegmentRecorder = (stream: MediaStream) => {
+    const chunks: BlobPart[] = [];
+    const chosenMime = mimeTypeRef.current;
+    const rec = chosenMime ? new MediaRecorder(stream, { mimeType: chosenMime }) : new MediaRecorder(stream);
+    const effectiveMime = (rec.mimeType || chosenMime || 'audio/webm').split(';')[0].trim() || 'audio/webm';
+
+    rec.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) chunks.push(ev.data);
     };
 
-    playNext();
+    rec.onstop = () => {
+      if (chunks.length === 0) return;
+      const audioBlob = new Blob(chunks, { type: effectiveMime });
+      if (audioBlob.size < 1500) return;
+      seqCounterRef.current += 1;
+      uploadQueueRef.current.push({
+        blob: audioBlob,
+        mimeType: effectiveMime,
+        seqNum: seqCounterRef.current,
+      });
+      processGroqQueue();
+    };
+
+    rec.start();
+    return rec;
   };
 
-  const handleVoiceDictation = () => {
-    const SpeechRec =
-      (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: any }).webkitSpeechRecognition;
-
-    if (!SpeechRec) {
-      // Populate a realistic live lecture snippet if browser lacks SpeechRecognition
-      setCustomText(
-        'In der heutigen Vorlesung untersuchen wir, wie erneuerbare Energien und digitale Stromnetze die deutsche Wirtschaft langfristig verändern. Wer Fragen hat, kann sich jederzeit melden.'
-      );
-      return;
-    }
-
-    if (isListeningDictation) {
-      setIsListeningDictation(false);
-      return;
-    }
-
+  const rotateGroqSegment = () => {
+    if (!isListeningRef.current || !micStreamRef.current) return;
+    const stream = micStreamRef.current;
+    const prevRec = activeRecorderRef.current;
+    let nextRec: MediaRecorder | null = null;
     try {
-      const recognition = new SpeechRec();
-      recognition.lang = 'de-DE';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => setIsListeningDictation(true);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript || '';
-        if (transcript) {
-          setCustomText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      nextRec = startNewSegmentRecorder(stream);
+      activeRecorderRef.current = nextRec;
+    } catch {
+      nextRec = null;
+    }
+    if (prevRec && prevRec.state !== 'inactive') {
+      const origStop = prevRec.onstop;
+      prevRec.onstop = function (ev) {
+        if (typeof origStop === 'function') origStop.call(this, ev);
+        if (!nextRec && isListeningRef.current && micStreamRef.current) {
+          try {
+            activeRecorderRef.current = startNewSegmentRecorder(micStreamRef.current);
+          } catch {}
         }
       };
-      recognition.onerror = () => setIsListeningDictation(false);
-      recognition.onend = () => setIsListeningDictation(false);
-      recognition.start();
-    } catch {
-      setIsListeningDictation(false);
+      try {
+        prevRec.stop();
+      } catch {}
     }
   };
 
-  const handleTranslateCustomLecture = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customText.trim()) return;
+  // Continuous 12s MediaRecorder + Groq Whisper (whisper-large-v3-turbo) + Wake Lock
+  const startRecording = async () => {
+    if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) return;
 
-    setIsTranslating(true);
-    setTranslateError(null);
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      return;
+    }
+
+    micStreamRef.current = stream;
+    mimeTypeRef.current = pickWebmMimeType();
+    await requestWakeLock();
+    setIsRecording(true);
+    setSeconds(0);
+    isListeningRef.current = true;
+    setLiveStatusText('Đang thu âm liên tục qua Groq Whisper (gửi gói mỗi 12 giây)...');
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setSeconds((p) => p + 1);
+    }, 1000);
 
     try {
-      const response = await fetch('/api/translate-lecture', {
+      activeRecorderRef.current = startNewSegmentRecorder(stream);
+    } catch {
+      stream.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+      isListeningRef.current = false;
+      setIsRecording(false);
+      return;
+    }
+
+    if (rotationTimerRef.current) clearInterval(rotationTimerRef.current);
+    rotationTimerRef.current = setInterval(() => {
+      rotateGroqSegment();
+    }, 12000);
+  };
+
+  const stopRecording = async () => {
+    isListeningRef.current = false;
+    setIsRecording(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (rotationTimerRef.current) clearInterval(rotationTimerRef.current);
+    rotationTimerRef.current = null;
+
+    const lastRec = activeRecorderRef.current;
+    activeRecorderRef.current = null;
+    if (lastRec && lastRec.state !== 'inactive') {
+      await new Promise<void>((resolve) => {
+        const origStop = lastRec.onstop;
+        lastRec.onstop = function (ev) {
+          if (typeof origStop === 'function') origStop.call(this, ev);
+          resolve();
+        };
+        try {
+          lastRec.stop();
+        } catch {
+          resolve();
+        }
+      });
+    }
+
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+    if (!isUploadingRef.current && uploadQueueRef.current.length === 0) {
+      setLiveStatusText('');
+    }
+    await releaseWakeLock();
+  };
+
+  const handlePasteSubmit = async () => {
+    if (!pasteText.trim()) return;
+    const lines = pasteText
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    for (const l of lines) {
+      await handleAddGermanSentence(l);
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    setPasteText('');
+    setPasteModalOpen(false);
+  };
+
+  const handleClearAll = () => {
+    uploadQueueRef.current = [];
+    seqCounterRef.current = 0;
+    setLiveStatusText('');
+    setSegments([]);
+    setConfirmClearOpen(false);
+  };
+
+  const handleExportTxt = () => {
+    if (segments.length === 0) return;
+    let content = "=== UNTERRICHT & MITSCHREIBEN (DEUTSCHPRIVATE) ===\n\n";
+    segments.forEach((seg, i) => {
+      content += `[${i + 1}] DE: ${seg.de}\n    VI: ${seg.vi}\n\n`;
+    });
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `UnterrichtMitschreiben_${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+  };
+
+  const handleFinishAndSummarize = async () => {
+    if (segments.length === 0) return;
+    setIsSummarizing(true);
+    try {
+      const fullGerman = segments.map(s => s.de).join(' ');
+      const res = await fetch('/api/translate-lecture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          germanText: customText.trim(),
-          level: targetLevel,
+          germanText: fullGerman,
+          level: 'B2',
         }),
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Không thể phân tích bài giảng.');
-      }
-
-      const newId = `lec-custom-${Date.now()}`;
-      const newLecture: LectureItem = {
-        id: newId,
-        title: data.title || 'Bài giảng tiếng Đức tự nhập (Phân tích SLA)',
-        speaker: 'Trình phân tích SLA trực tiếp',
-        institution: `Phân tích ngữ pháp & ngữ cảnh ${targetLevel}`,
-        level: targetLevel,
-        duration: `${Math.max(1, Math.ceil((data.segments?.length || 1) * 0.4))}:00`,
-        topic: 'Bài giảng tuỳ chỉnh',
-        summaryVi: data.summaryVi || 'Bản dịch và phân tích cấu trúc câu theo phương pháp tiếp thu tự nhiên.',
-        segments: (data.segments || []).map((seg: any, idx: number) => ({
-          id: `${newId}-seg-${idx}`,
-          timestamp: `00:${String(idx * 18).padStart(2, '0')}`,
-          de: seg.de,
-          vi: seg.vi,
-          literalChunk: seg.literalChunk || seg.vi,
-          grammarNote: seg.grammarNote || 'Cấu trúc câu tiếng Đức tiêu chuẩn.',
-          cefr: ['B1', 'B2', 'C1'].includes(seg.cefr) ? seg.cefr : targetLevel,
-        })),
-        keyVocab: (data.keyVocab || []).map((v: any, idx: number) => ({
-          id: `${newId}-voc-${idx}`,
-          word: v.word,
-          article: ['der', 'die', 'das'].includes(v.article) ? v.article : '',
-          plural: v.plural || '',
-          ipa: v.ipa || '',
-          meaningVi: v.meaningVi,
-          level: ['B1', 'B2', 'C1'].includes(v.level) ? v.level : targetLevel,
-          category: 'Bài giảng trực tiếp',
-          collocation: v.exampleDe || v.word,
-          exampleDe: v.exampleDe || '',
-          exampleVi: v.exampleVi || '',
-          mastery: 50,
-        })),
-      };
-
-      setLectures((prev) => [newLecture, ...prev]);
-      setSelectedLectureId(newId);
-      setCustomText('');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Không thể tóm tắt bài học.');
+      setSummaryData(data);
+      setSummaryModalOpen(true);
     } catch (err: any) {
-      setTranslateError(err.message || 'Đã xảy ra lỗi khi gọi Gemini API.');
+      // ignore
     } finally {
-      setIsTranslating(false);
+      setIsSummarizing(false);
     }
   };
 
+  const formatTimer = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  // Group translated sentences into paragraphs of 4-5 sentences each
+  const paragraphs: Array<LectureSegment[]> = [];
+  let currentParagraph: LectureSegment[] = [];
+  segments.forEach((seg, idx) => {
+    currentParagraph.push(seg);
+    if (currentParagraph.length >= 4 || idx === segments.length - 1) {
+      paragraphs.push(currentParagraph);
+      currentParagraph = [];
+    }
+  });
+
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-      {/* Left Interactive Stage (7 cols on lg): Active Lecture Breakdown */}
-      <div className="space-y-6 lg:col-span-8">
-        {/* Lecture Header & Playback Bar */}
-        <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-6">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-            <span>{currentLecture.institution}</span>
-            <span aria-hidden="true">·</span>
-            <span>Giảng viên: {currentLecture.speaker}</span>
-            <span aria-hidden="true">·</span>
-            <span className="font-mono text-emerald-400">Trình độ {currentLecture.level}</span>
-            <span aria-hidden="true">·</span>
-            <span className="font-mono tabular-nums">{currentLecture.duration}</span>
-          </div>
-
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-100">
-            {currentLecture.title}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            {currentLecture.summaryVi}
-          </p>
-
-          {/* Controls Toolbar */}
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 pt-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handlePlayEntireLecture}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
-                  isPlayingAll
-                    ? 'bg-rose-600 text-white hover:bg-rose-500'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-500'
-                }`}
-              >
-                {isPlayingAll ? (
-                  <>
-                    <Square className="h-3.5 w-3.5 fill-current" />
-                    <span>Dừng phát bài giảng</span>
-                  </>
-                ) : (
-                  <>
-                    <Volume2 className="h-4 w-4" />
-                    <span>Nghe toàn bộ bài giảng</span>
-                  </>
-                )}
-              </button>
-
-              {/* Speed Segmented Control */}
-              <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
-                {[0.8, 0.95, 1.1].map((rate) => (
-                  <button
-                    key={rate}
-                    type="button"
-                    onClick={() => setSpeechRate(rate)}
-                    className={`rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                      speechRate === rate
-                        ? 'bg-slate-800 text-emerald-400'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {rate}x
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Display Layer Toggles */}
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowLiteralChunk((prev) => !prev)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                  showLiteralChunk
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Tách cụm tư duy Đức (Word-Chunking)
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowGrammarNote((prev) => !prev)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                  showGrammarNote
-                    ? 'border-sky-500/40 bg-sky-500/10 text-sky-300'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Giải thích Ngữ pháp SLA
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Interactive Sentence-by-Sentence SLA Breakdown */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Nhấp vào bất kỳ từ tiếng Đức nào để mở từ điển giống từ (der/die/das) & lưu vào Kho B1–C1</span>
-            <span className="font-mono tabular-nums">{currentLecture.segments.length} phân đoạn</span>
-          </div>
-
-          {currentLecture.segments.map((seg, idx) => {
-            const isSegmentActive = activeSegmentId === seg.id;
-            const words = seg.de.split(/\s+/);
-
-            return (
-              <div
-                key={seg.id}
-                className={`rounded-xl border p-5 transition-colors ${
-                  isSegmentActive
-                    ? 'border-emerald-500/60 bg-emerald-950/20'
-                    : 'border-slate-800/90 bg-[#0d1424] hover:border-slate-700/80'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <span className="font-mono font-semibold text-emerald-400 tabular-nums">
-                      #{String(idx + 1).padStart(2, '0')}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span className="font-mono tabular-nums">{seg.timestamp}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="font-mono">CEFR {seg.cefr}</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handlePlaySegment(seg.id, seg.de)}
-                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                      isSegmentActive
-                        ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300'
-                        : 'border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Volume2 className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>{isSegmentActive ? 'Đang đọc...' : 'Phát câu'}</span>
-                  </button>
-                </div>
-
-                {/* Clickable German Sentence */}
-                <p className="mt-3 text-lg font-semibold leading-relaxed text-slate-100">
-                  {words.map((token, wIdx) => (
-                    <React.Fragment key={wIdx}>
-                      <span
-                        onClick={() => onSelectWord(token, seg.de)}
-                        className="cursor-pointer rounded-xs px-0.5 transition-colors hover:bg-emerald-500/25 hover:text-emerald-200"
-                        title="Nhấn để tra cứu từ này"
-                      >
-                        {token}
-                      </span>{' '}
-                    </React.Fragment>
-                  ))}
-                </p>
-
-                {/* Natural Vietnamese Translation */}
-                <p className="mt-2 text-sm font-medium text-emerald-300/95">
-                  {seg.vi}
-                </p>
-
-                {/* SLA Literal Chunking */}
-                {showLiteralChunk && (
-                  <div className="mt-3 rounded-lg border border-slate-800/80 bg-[#080d1a] px-3.5 py-2.5">
-                    <div className="text-xs font-medium text-slate-400">
-                      Tư duy trật tự từ tiếng Đức (Word-by-Word Chunking):
-                    </div>
-                    <p className="mt-0.5 font-mono text-xs text-slate-300">{seg.literalChunk}</p>
-                  </div>
-                )}
-
-                {/* Grammar Point */}
-                {showGrammarNote && (
-                  <div className="mt-2.5 flex items-baseline gap-2 text-xs text-slate-400">
-                    <span className="font-semibold text-sky-400 shrink-0">Cấu trúc:</span>
-                    <span>{seg.grammarNote}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Right Control & Input Deck (4 cols on lg) */}
-      <div className="space-y-6 lg:col-span-4">
-        {/* Selector for Preloaded Lectures */}
-        <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-100">Thư Viện Bài Giảng Mẫu</h3>
-            <span className="font-mono text-xs text-slate-400 tabular-nums">{lectures.length} bài</span>
-          </div>
-          <p className="mt-1 text-xs text-slate-400">
-            Chọn bài giảng đại học hoặc hội thoại tâm lý học để nghe và mổ xẻ cấu trúc câu.
-          </p>
-
-          <div className="mt-4 space-y-2.5">
-            {lectures.map((lec) => {
-              const isSelected = lec.id === selectedLectureId;
-              return (
-                <button
-                  key={lec.id}
-                  type="button"
-                  onClick={() => {
-                    speechEngine.stop();
-                    setIsPlayingAll(false);
-                    setActiveSegmentId(null);
-                    setSelectedLectureId(lec.id);
-                  }}
-                  className={`w-full rounded-lg border p-3.5 text-left transition-colors ${
-                    isSelected
-                      ? 'border-emerald-500/60 bg-emerald-950/25'
-                      : 'border-slate-800/80 bg-[#080d1a] hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <span className="font-mono font-semibold text-emerald-400">{lec.level}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{lec.topic}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="font-mono tabular-nums">{lec.duration}</span>
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-100 line-clamp-2">
-                    {lec.title}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Live Lecture / Transcript Translator Input Box */}
-        <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-100">Dịch Bài Giảng Trực Tiếp (AI SLA)</h3>
-            <Languages className="h-4 w-4 text-emerald-400" />
-          </div>
-          <p className="mt-1 text-xs text-slate-400">
-            Dán phụ đề bài giảng trên lớp, đoạn ghi âm tiếng Đức hoặc thu âm giọng nói để tách câu, dịch song ngữ và rút trích từ vựng B1–C1.
-          </p>
-
-          <form onSubmit={handleTranslateCustomLecture} className="mt-4 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-slate-300">Mức độ phân tích:</span>
-              <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-[#080d1a] p-1">
-                {(['B1', 'B2', 'C1'] as const).map((lvl) => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    onClick={() => setTargetLevel(lvl)}
-                    className={`rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors ${
-                      targetLevel === lvl
-                        ? 'bg-emerald-600 text-white'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {lvl}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <textarea
-              rows={4}
-              value={customText}
-              onChange={(e) => setCustomText(e.target.value)}
-              placeholder="Ví dụ: Obwohl die Digitalisierung an deutschen Hochschulen schnell voranschreitet, bleibt das persönliche Gespräch im Seminar unverzichtbar..."
-              className="w-full rounded-lg border border-slate-800 bg-[#080d1a] p-3 text-sm text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-            />
-
-            <div className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={handleVoiceDictation}
-                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                  isListeningDictation
-                    ? 'border-rose-500/50 bg-rose-500/20 text-rose-300'
-                    : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-700'
-                }`}
-              >
-                {isListeningDictation ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5 text-emerald-400" />}
-                <span>{isListeningDictation ? 'Đang nghe...' : 'Thu âm / Điền mẫu'}</span>
-              </button>
-
-              {customText && (
-                <button
-                  type="button"
-                  onClick={() => setCustomText('')}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Xoá</span>
-                </button>
-              )}
-            </div>
-
-            {translateError && (
-              <p className="rounded-lg border border-rose-500/30 bg-rose-950/30 p-2.5 text-xs text-rose-300">
-                {translateError}
-              </p>
+    <div className="space-y-6">
+      {/* Control Panel Header (Gom gọn thành 1 hàng) */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-800/95 bg-[#0d1424] p-4 sm:flex-row sm:items-center sm:justify-between shadow-xl">
+        {/* 3 Main Buttons on 1 Horizontal Row */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* 1. Start / Stop Recording with Timer */}
+          <button
+            type="button"
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all shadow-md ${
+              isRecording
+                ? 'bg-rose-600 text-white animate-pulse hover:bg-rose-500'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500'
+            }`}
+          >
+            {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            <span>{isRecording ? 'Đang lắng nghe bài giảng...' : 'Bắt đầu lắng nghe bài giảng'}</span>
+            {isRecording && (
+              <span className="flex items-center gap-1 font-mono rounded bg-black/30 px-2 py-0.5 text-[11px] text-rose-200">
+                <Clock className="h-3 w-3" />
+                {formatTimer(seconds)}
+              </span>
             )}
+          </button>
 
-            <button
-              type="submit"
-              disabled={isTranslating || !customText.trim()}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
-            >
-              {isTranslating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Đang tách câu & phân tích ngữ pháp...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  <span>Phân Tích & Dịch Bài Giảng</span>
-                </>
-              )}
-            </button>
-          </form>
+          {/* 2. Paste text button */}
+          <button
+            type="button"
+            onClick={() => setPasteModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3.5 py-2.5 text-xs font-semibold text-sky-300 transition-colors hover:bg-sky-500/20"
+          >
+            <ClipboardPaste className="h-4 w-4" />
+            <span>Dán văn bản</span>
+          </button>
+
+          {/* 3. Finish & Summarize */}
+          <button
+            type="button"
+            onClick={handleFinishAndSummarize}
+            disabled={isSummarizing || segments.length === 0}
+            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+          >
+            {isSummarizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-amber-300" />}
+            <span>Kết thúc & Tóm tắt bài học</span>
+          </button>
         </div>
 
-        {/* Key Vocabulary from Active Lecture */}
-        <div className="rounded-xl border border-slate-800/90 bg-[#0d1424] p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-100">Từ Vựng Trọng Tâm Bài Giảng</h3>
-            <BookOpen className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="mt-3 space-y-2.5">
-            {currentLecture.keyVocab.map((voc) => {
-              const isSaved = savedVocab.some((v) => v.word.toLowerCase() === voc.word.toLowerCase());
-              return (
-                <div
-                  key={voc.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-800/80 bg-[#080d1a] p-3"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-100">
-                      {voc.article && (
-                        <span
-                          className={
-                            voc.article === 'der'
-                              ? 'text-sky-400'
-                              : voc.article === 'die'
-                              ? 'text-rose-400'
-                              : 'text-emerald-400'
-                          }
-                        >
-                          {voc.article}
-                        </span>
-                      )}
-                      <span className="truncate">{voc.word}</span>
-                    </div>
-                    <p className="truncate text-xs text-slate-400">{voc.meaningVi}</p>
-                  </div>
+        {/* Top-Right Compact Icons: Save .txt & Clear with Confirmation */}
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <button
+            type="button"
+            onClick={handleExportTxt}
+            disabled={segments.length === 0}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white disabled:opacity-40"
+            title="Lưu file .txt"
+          >
+            <Download className="h-4 w-4 text-emerald-400" />
+          </button>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        speechEngine.speak(voc.article ? `${voc.article} ${voc.word}` : voc.word, {
-                          rate: 0.9,
-                        })
-                      }
-                      className="rounded-md border border-slate-800 p-1.5 text-slate-300 hover:bg-slate-800 hover:text-emerald-400"
-                      title="Nghe phát âm"
-                    >
-                      <Volume2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onSaveVocab(voc)}
-                      disabled={isSaved}
-                      className={`rounded-md border p-1.5 transition-colors ${
-                        isSaved
-                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                          : 'border-slate-800 text-slate-300 hover:bg-emerald-600 hover:text-white'
-                      }`}
-                      title={isSaved ? 'Đã có trong Kho từ' : 'Lưu vào Kho từ'}
-                    >
-                      {isSaved ? <Check className="h-3.5 w-3.5" /> : <BookmarkPlus className="h-3.5 w-3.5" />}
-                    </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (segments.length > 0) setConfirmClearOpen(true);
+            }}
+            disabled={segments.length === 0}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 transition-colors hover:bg-rose-500/20 disabled:opacity-40"
+            title="Xóa bảng dịch"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 3 Display Frames */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left Column: Live German Segments & Parallel Translation */}
+        <div className="space-y-4 lg:col-span-7">
+          <div className="flex items-center justify-between text-xs text-slate-400">
+            <span>Khung song song từng câu (Đức - Việt) · Nhấp vào từ để tra cứu</span>
+            <span className="font-mono tabular-nums">{segments.length} câu</span>
+          </div>
+
+          <div className="flex h-[580px] flex-col gap-3 overflow-y-auto pr-1">
+            {segments.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-[#0d1424]/60 p-8 text-center text-slate-400">
+                <Mic className="mb-3 h-10 w-10 opacity-40 text-emerald-400 animate-bounce" />
+                <h4 className="text-sm font-bold text-slate-200">Chưa có nội dung ghi âm</h4>
+                <p className="mt-1 text-xs max-w-sm">
+                  Nhấn <strong className="text-emerald-400">"Bắt đầu lắng nghe bài giảng"</strong> hoặc <strong className="text-sky-400">"Dán văn bản"</strong> để bắt đầu chuyển đổi trực tiếp.
+                </p>
+              </div>
+            ) : (
+              segments.map((seg, idx) => {
+                const words = seg.de.split(/\s+/);
+                return (
+                  <div
+                    key={seg.id}
+                    className={`rounded-xl border p-4 transition-all ${
+                      seg.isNote
+                        ? 'border-amber-500/50 bg-amber-950/15 shadow-md'
+                        : 'border-slate-800/90 bg-[#0d1424]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-mono text-[11px] font-bold text-emerald-400">
+                        #{String(idx + 1).padStart(2, '0')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => speechEngine.speak(seg.de, { rate: 0.95 })}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] text-slate-300 hover:text-emerald-300"
+                        title="Nghe câu"
+                      >
+                        <Volume2 className="h-3 w-3 text-emerald-400" />
+                        <span>Nghe</span>
+                      </button>
+                    </div>
+
+                    <p className="text-base font-medium leading-relaxed text-slate-100">
+                      {words.map((w, wi) => (
+                        <span
+                          key={wi}
+                          onClick={() => onSelectWord(w, seg.de)}
+                          className="cursor-pointer hover:bg-emerald-500/25 hover:text-emerald-200 rounded px-0.5"
+                          title="Nhấn để tra từ"
+                        >
+                          {w}{' '}
+                        </span>
+                      ))}
+                    </p>
+
+                    <p className={`mt-1.5 text-sm font-semibold ${seg.isNote ? 'text-amber-300' : 'text-emerald-300'}`}>
+                      {seg.vi}
+                    </p>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
+            {(isRecording || liveStatusText) && liveStatusText && (
+              <div className="rounded-xl border border-sky-500/30 bg-sky-950/20 px-3.5 py-2 text-xs text-sky-200">
+                <span className="font-semibold text-sky-400">Groq Whisper (de): </span>
+                <span>{liveStatusText}</span>
+              </div>
+            )}
+            <div ref={threadEndRef} />
+          </div>
+        </div>
+
+        {/* Right Column: Real-time Paragraph Flow for Vietnamese Translation */}
+        <div className="flex h-[620px] flex-col rounded-2xl border border-slate-800/90 bg-[#0d1424] p-5 lg:col-span-5">
+          <div className="mb-3 flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-emerald-400" />
+              <span>1. Bản dịch tiếng Việt (Đoạn văn xuôi mạch lạc)</span>
+            </h3>
+            <span className="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-emerald-300 border border-emerald-500/30">
+              Live Real-time
+            </span>
+          </div>
+
+          <div className="flex-1 space-y-4 overflow-y-auto pr-1 text-sm leading-relaxed text-slate-200">
+            {paragraphs.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-center text-xs text-slate-500">
+                Bản dịch tiếng Việt liên tục theo thời gian thực sẽ xuất hiện tại đây...
+              </div>
+            ) : (
+              paragraphs.map((para, pIdx) => (
+                <p key={pIdx} className="text-justify indent-4">
+                  {para.map((seg, sIdx) => {
+                    if (seg.isNote) {
+                      return (
+                        <span
+                          key={seg.id}
+                          className="mx-1 rounded bg-amber-500/20 px-1.5 py-0.5 font-semibold text-amber-300 border border-amber-500/40"
+                          title="Lưu ý giáo viên / Thi cử"
+                        >
+                          {seg.vi}{sIdx < para.length - 1 ? ' ' : ''}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span key={seg.id}>
+                        {seg.vi}{sIdx < para.length - 1 ? ' ' : ''}
+                      </span>
+                    );
+                  })}
+                </p>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Paste Modal */}
+      {pasteModalOpen && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPasteModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-lg rounded-2xl border border-slate-700/80 bg-[#0b1120] p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 className="text-base font-bold text-slate-100">Dán văn bản tiếng Đức</h4>
+              <button
+                type="button"
+                onClick={() => setPasteModalOpen(false)}
+                className="rounded-lg border border-slate-800 bg-slate-900 p-1.5 text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <textarea
+              rows={6}
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder="Dán đoạn văn bản hoặc ghi chú bài giảng tiếng Đức vào đây để hệ thống dịch trực tiếp thành đoạn văn mạch lạc..."
+              className="w-full rounded-xl border border-slate-700 bg-[#080d1a] p-3.5 text-sm text-slate-100 outline-none focus:border-sky-500"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPasteModalOpen(false)}
+                className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handlePasteSubmit}
+                className="rounded-xl bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-500"
+              >
+                Xử lý & Dịch ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Clear Modal */}
+      {confirmClearOpen && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmClearOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-[#0b1120] p-5 shadow-2xl text-center">
+            <h4 className="text-base font-bold text-slate-100 mb-2">Xác nhận xóa bảng dịch?</h4>
+            <p className="text-xs text-slate-300 mb-5">
+              Bạn có chắc chắn muốn xóa toàn bộ nội dung bản dịch hiện tại không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmClearOpen(false)}
+                className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500"
+              >
+                Xóa tất cả
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Modal */}
+      {summaryModalOpen && summaryData && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSummaryModalOpen(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+        >
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-blue-500/40 bg-[#0b1120] p-6 shadow-2xl overflow-y-auto">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 className="text-lg font-bold text-blue-400 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-300" />
+                <span>Tóm tắt & Phân tích bài học (Gemini SLA)</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setSummaryModalOpen(false)}
+                className="rounded-lg border border-slate-800 bg-slate-900 p-1.5 text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm text-slate-200">
+              <div>
+                <strong className="text-emerald-400 block mb-1">Chủ đề bài giảng:</strong>
+                <p className="bg-[#080d1a] p-3 rounded-xl border border-slate-800">{summaryData.title}</p>
+              </div>
+              <div>
+                <strong className="text-emerald-400 block mb-1">Tóm tắt nội dung chính:</strong>
+                <p className="bg-[#080d1a] p-3 rounded-xl border border-slate-800 leading-relaxed">{summaryData.summaryVi}</p>
+              </div>
+              {Array.isArray(summaryData.keyVocab) && summaryData.keyVocab.length > 0 && (
+                <div>
+                  <strong className="text-emerald-400 block mb-2">Từ vựng & Cụm từ quan trọng:</strong>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {summaryData.keyVocab.map((v: any, i: number) => (
+                      <div key={i} className="bg-[#080d1a] p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                        <div>
+                          <div className="font-bold text-slate-100 text-xs">
+                            {v.article ? `${v.article} ` : ''}{v.word}
+                          </div>
+                          <div className="text-[11px] text-slate-400">{v.meaningVi}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onSaveVocab({
+                            id: `sum-voc-${Date.now()}-${i}`,
+                            word: v.word,
+                            article: v.article || '',
+                            plural: v.plural || '',
+                            ipa: v.ipa || '',
+                            meaningVi: v.meaningVi,
+                            level: v.level || 'B2',
+                            category: 'Tóm tắt bài học',
+                            collocation: v.exampleDe || v.word,
+                            exampleDe: v.exampleDe || '',
+                            exampleVi: v.exampleVi || '',
+                            mastery: 50,
+                          })}
+                          className="rounded-lg bg-emerald-600/20 border border-emerald-500/40 px-2.5 py-1 text-[11px] text-emerald-300 hover:bg-emerald-600 hover:text-white"
+                        >
+                          Lưu từ
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSummaryModalOpen(false)}
+                className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-semibold text-white hover:bg-blue-500"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
